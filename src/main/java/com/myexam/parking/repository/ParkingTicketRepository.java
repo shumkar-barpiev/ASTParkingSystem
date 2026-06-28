@@ -7,4 +7,6 @@ import com.myexam.parking.model.ParkingTicket;
 public interface ParkingTicketRepository {
 	public List<ParkingTicket> findAll();
 
+	public ParkingTicket findById(String id);
+
 }
