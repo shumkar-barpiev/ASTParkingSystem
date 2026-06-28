@@ -13,4 +13,8 @@ public interface ParkingTicketRepository {
 
 	public void delete(String id);
 
+	public long countActiveTicketsByZoneId(String zoneId);
+
+	public ParkingTicket findActiveTicketByVehiclePlate(String vehiclePlate);
+
 }

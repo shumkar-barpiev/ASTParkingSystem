@@ -204,6 +204,60 @@ public class ParkingTicketMongoRepositoryTest {
 				.hasMessage("Total cost cannot be negative");
 	}
 
+	@Test
+	public void testCountActiveTicketsByZoneIdShouldReturnCountOfActiveTickets() {
+		LocalDateTime entry = LocalDateTime.of(2026, 6, 26, 9, 0);
+		LocalDateTime exit = LocalDateTime.of(2026, 6, 26, 11, 0);
+
+		addTestTicket("t1", "AB123", "parkingId1", entry, null, false, 0.0);
+		addTestTicket("t2", "CD456", "parkingId1", entry, null, false, 0.0);
+		addTestTicket("t3", "EF789", "parkingId1", entry, exit, true, 5.0);
+		addTestTicket("t4", "GH012", "parkingId2", entry, null, false, 0.0);
+
+		assertThat(ticketRepository.countActiveTicketsByZoneId("parkingId1")).isEqualTo(2L);
+	}
+
+	@Test
+	public void testCountActiveTicketsByZoneIdShouldReturnZeroWhenNoActiveTickets() {
+		LocalDateTime entry = LocalDateTime.of(2026, 6, 26, 9, 0);
+		LocalDateTime exit = LocalDateTime.of(2026, 6, 26, 11, 0);
+
+		addTestTicket("t1", "AB123", "parkingId1", entry, exit, true, 5.0);
+
+		assertThat(ticketRepository.countActiveTicketsByZoneId("parkingId1")).isEqualTo(0L);
+	}
+
+	@Test
+	public void testCountActiveTicketsByZoneIdShouldReturnZeroWhenZoneIsEmpty() {
+		assertThat(ticketRepository.countActiveTicketsByZoneId("parkingId1")).isEqualTo(0L);
+	}
+
+	@Test
+	public void testFindActiveTicketByVehiclePlateShouldReturnTicketWhenActiveTicketExists() {
+		LocalDateTime entry = LocalDateTime.of(2026, 6, 26, 9, 0);
+
+		addTestTicket("t1", "AB123", "parkingId1", entry, null, false, 0.0);
+
+		ParkingTicket result = ticketRepository.findActiveTicketByVehiclePlate("AB123");
+
+		assertThat(result).isEqualTo(new ParkingTicket("t1", "AB123", "parkingId1", entry, null, false, 0.0));
+	}
+
+	@Test
+	public void testFindActiveTicketByVehiclePlateShouldReturnNullWhenTicketIsCompleted() {
+		LocalDateTime entry = LocalDateTime.of(2026, 6, 26, 9, 0);
+		LocalDateTime exit = LocalDateTime.of(2026, 6, 26, 11, 0);
+
+		addTestTicket("t1", "AB123", "parkingId1", entry, exit, true, 5.0);
+
+		assertThat(ticketRepository.findActiveTicketByVehiclePlate("AB123")).isNull();
+	}
+
+	@Test
+	public void testFindActiveTicketByVehiclePlateShouldReturnNullWhenPlateNotFound() {
+		assertThat(ticketRepository.findActiveTicketByVehiclePlate("UnknownPlate")).isNull();
+	}
+
 	private void addTestTicket(String id, String vehiclePlate, String parkingZoneId, LocalDateTime entryTime,
 			LocalDateTime exitTime, boolean paid, double totalCost) {
 
