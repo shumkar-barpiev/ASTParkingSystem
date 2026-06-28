@@ -4,6 +4,9 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.net.InetSocketAddress;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import org.bson.Document;
 import org.junit.After;
@@ -94,6 +97,26 @@ public class ParkingTicketMongoRepositoryTest {
 				.isEqualTo(new ParkingTicket("1", "ABC123", "ParkingAId", entry, null, false, 0.0));
 	}
 
+	@Test
+	public void testSave() {
+		LocalDateTime entry = LocalDateTime.of(2026, 6, 20, 8, 15);
+		ParkingTicket ticket = new ParkingTicket("1", "ABC123", "ParkingAId", entry, null, false, 0.0);
+
+		ticketRepository.save(ticket);
+
+		assertThat(readAllTicketsFromDatabase()).containsExactly(ticket);
+	}
+
+	@Test
+	public void testDelete() {
+		LocalDateTime entry = LocalDateTime.of(2026, 6, 20, 10, 0);
+		addTestTicket("1", "ABC123", "ParkingAId", entry, null, false, 0.0);
+
+		ticketRepository.delete("1");
+
+		assertThat(readAllTicketsFromDatabase()).isEmpty();
+	}
+
 	private void addTestTicket(String id, String vehiclePlate, String parkingZoneId, LocalDateTime entryTime,
 			LocalDateTime exitTime, boolean paid, double totalCost) {
 
@@ -108,6 +131,16 @@ public class ParkingTicketMongoRepositoryTest {
 		}
 
 		ticketCollection.insertOne(doc);
+	}
+
+	private List<ParkingTicket> readAllTicketsFromDatabase() {
+		return StreamSupport.stream(ticketCollection.find().spliterator(), false)
+				.map(d -> new ParkingTicket(d.getString("id"), d.getString("vehiclePlate"),
+						d.getString("parkingZoneId"),
+						d.getString("entryTime") != null ? LocalDateTime.parse(d.getString("entryTime")) : null,
+						d.getString("exitTime") != null ? LocalDateTime.parse(d.getString("exitTime")) : null,
+						d.getBoolean("paid", false), d.getDouble("totalCost") != null ? d.getDouble("totalCost") : 0.0))
+				.collect(Collectors.toList());
 	}
 
 }

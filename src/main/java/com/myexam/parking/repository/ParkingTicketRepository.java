@@ -9,4 +9,8 @@ public interface ParkingTicketRepository {
 
 	public ParkingTicket findById(String id);
 
+	public void save(ParkingTicket parkingTicket);
+
+	public void delete(String id);
+
 }
