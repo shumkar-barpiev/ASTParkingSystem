@@ -38,6 +38,21 @@ public class ParkingTicketMongoRepository implements ParkingTicketRepository {
 		return null;
 	}
 
+	@Override
+	public void save(ParkingTicket ticket) {
+
+		ticketCollection.insertOne(new Document().append("id", ticket.getId())
+				.append("vehiclePlate", ticket.getVehiclePlate()).append("parkingZoneId", ticket.getParkingZoneId())
+				.append("entryTime", ticket.getEntryTime() != null ? ticket.getEntryTime().toString() : null)
+				.append("exitTime", ticket.getExitTime() != null ? ticket.getExitTime().toString() : null)
+				.append("paid", ticket.isPaid()).append("totalCost", ticket.getTotalCost()));
+	}
+
+	@Override
+	public void delete(String id) {
+		ticketCollection.deleteOne(Filters.eq("id", id));
+	}
+
 	private ParkingTicket fromDocumentToParkingTicket(Document d) {
 		return new ParkingTicket(d.getString("id"), d.getString("vehiclePlate"), d.getString("parkingZoneId"),
 				d.getString("entryTime") != null ? LocalDateTime.parse(d.getString("entryTime")) : null,
