@@ -13,6 +13,7 @@ import com.myexam.parking.model.ParkingZone;
 import com.myexam.parking.repository.ParkingZoneRepository;
 
 public class ParkingZoneMongoRepository implements ParkingZoneRepository {
+
 	private MongoCollection<Document> parkingZoneCollection;
 
 	public ParkingZoneMongoRepository(MongoClient client, String databaseName, String collectionName) {
@@ -38,6 +39,7 @@ public class ParkingZoneMongoRepository implements ParkingZoneRepository {
 
 	@Override
 	public void save(ParkingZone parkingZone) {
+		validateParkingZone(parkingZone);
 
 		parkingZoneCollection.insertOne(new Document().append("id", parkingZone.getId())
 				.append("name", parkingZone.getName()).append("capacity", parkingZone.getCapacity())
@@ -52,6 +54,21 @@ public class ParkingZoneMongoRepository implements ParkingZoneRepository {
 	private ParkingZone fromDocumentToParkingZone(Document d) {
 		return new ParkingZone(d.getString("id"), d.getString("name"), d.getInteger("capacity"),
 				d.getDouble("hourlyRate"), d.getBoolean("isAvailable"));
+	}
+
+	private void validateParkingZone(ParkingZone parkingZone) {
+		if (parkingZone.getId() == null || parkingZone.getId().trim().isEmpty()) {
+			throw new IllegalArgumentException("ID cannot be null or blank");
+		}
+		if (parkingZone.getName() == null || parkingZone.getName().trim().isEmpty()) {
+			throw new IllegalArgumentException("Name cannot be null or blank");
+		}
+		if (parkingZone.getCapacity() == null || parkingZone.getCapacity() < 0) {
+			throw new IllegalArgumentException("Capacity cannot be negative or null");
+		}
+		if (parkingZone.getHourlyRate() < 0) {
+			throw new IllegalArgumentException("Hourly rate cannot be negative");
+		}
 	}
 
 }
