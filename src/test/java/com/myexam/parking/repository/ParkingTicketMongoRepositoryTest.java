@@ -80,6 +80,20 @@ public class ParkingTicketMongoRepositoryTest {
 				new ParkingTicket("2", "DFE456", "ParkingBId", entry2, null, false, 0.0));
 	}
 
+	@Test
+	public void testFindByIdNotFound() {
+		assertThat(ticketRepository.findById("999")).isNull();
+	}
+
+	@Test
+	public void testFindByIdFound() {
+		LocalDateTime entry = LocalDateTime.of(2026, 6, 20, 14, 30);
+		addTestTicket("1", "ABC123", "ParkingAId", entry, null, false, 0.0);
+
+		assertThat(ticketRepository.findById("1"))
+				.isEqualTo(new ParkingTicket("1", "ABC123", "ParkingAId", entry, null, false, 0.0));
+	}
+
 	private void addTestTicket(String id, String vehiclePlate, String parkingZoneId, LocalDateTime entryTime,
 			LocalDateTime exitTime, boolean paid, double totalCost) {
 

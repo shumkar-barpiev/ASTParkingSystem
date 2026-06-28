@@ -9,6 +9,7 @@ import org.bson.Document;
 
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.model.Filters;
 import com.myexam.parking.model.ParkingTicket;
 import com.myexam.parking.repository.ParkingTicketRepository;
 
@@ -24,6 +25,17 @@ public class ParkingTicketMongoRepository implements ParkingTicketRepository {
 	public List<ParkingTicket> findAll() {
 		return StreamSupport.stream(ticketCollection.find().spliterator(), false).map(this::fromDocumentToParkingTicket)
 				.collect(Collectors.toList());
+	}
+
+	@Override
+	public ParkingTicket findById(String id) {
+		Document d = ticketCollection.find(Filters.eq("id", id)).first();
+
+		if (d != null) {
+			return fromDocumentToParkingTicket(d);
+		}
+
+		return null;
 	}
 
 	private ParkingTicket fromDocumentToParkingTicket(Document d) {
