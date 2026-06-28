@@ -7,4 +7,6 @@ import com.myexam.parking.model.ParkingZone;
 public interface ParkingZoneRepository {
 	public List<ParkingZone> findAll();
 
+	public ParkingZone findById(String id);
+
 }
