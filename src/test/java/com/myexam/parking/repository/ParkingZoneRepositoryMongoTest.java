@@ -90,8 +90,33 @@ public class ParkingZoneRepositoryMongoTest {
 		assertThat(parkingZoneRepository.findById("1")).isEqualTo(new ParkingZone("1", "ParkingA", 100, 2.50, true));
 	}
 
+	@Test
+	public void testSave() {
+		ParkingZone parkingZone = new ParkingZone("1", "ParkingA", 100, 2.50, true);
+
+		parkingZoneRepository.save(parkingZone);
+
+		assertThat(readAllParkingZonesFromDatabase()).containsExactly(parkingZone);
+	}
+
+	@Test
+	public void testDelete() {
+		addTestParkingZone("1", "ParkingA", 100, 2.50, true);
+
+		parkingZoneRepository.delete("1");
+
+		assertThat(readAllParkingZonesFromDatabase()).isEmpty();
+	}
+
 	private void addTestParkingZone(String id, String name, Integer capacity, double hourlyRate, boolean isAvailable) {
 		parkingZoneCollection.insertOne(new Document().append("id", id).append("name", name)
 				.append("capacity", capacity).append("hourlyRate", hourlyRate).append("isAvailable", isAvailable));
+	}
+
+	private List<ParkingZone> readAllParkingZonesFromDatabase() {
+		return StreamSupport.stream(parkingZoneCollection.find().spliterator(), false)
+				.map(d -> new ParkingZone(d.getString("id"), d.getString("name"), d.getInteger("capacity"),
+						d.getDouble("hourlyRate"), d.getBoolean("isAvailable")))
+				.collect(Collectors.toList());
 	}
 }

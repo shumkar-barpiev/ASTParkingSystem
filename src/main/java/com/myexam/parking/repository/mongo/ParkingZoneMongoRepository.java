@@ -36,6 +36,19 @@ public class ParkingZoneMongoRepository implements ParkingZoneRepository {
 		return null;
 	}
 
+	@Override
+	public void save(ParkingZone parkingZone) {
+
+		parkingZoneCollection.insertOne(new Document().append("id", parkingZone.getId())
+				.append("name", parkingZone.getName()).append("capacity", parkingZone.getCapacity())
+				.append("hourlyRate", parkingZone.getHourlyRate()).append("isAvailable", parkingZone.isAvailable()));
+	}
+
+	@Override
+	public void delete(String id) {
+		parkingZoneCollection.deleteOne(Filters.eq("id", id));
+	}
+
 	private ParkingZone fromDocumentToParkingZone(Document d) {
 		return new ParkingZone(d.getString("id"), d.getString("name"), d.getInteger("capacity"),
 				d.getDouble("hourlyRate"), d.getBoolean("isAvailable"));
