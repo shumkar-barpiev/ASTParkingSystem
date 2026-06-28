@@ -14,6 +14,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.myexam.parking.model.ParkingZone;
 import com.mongodb.MongoClient;
 import com.mongodb.ServerAddress;
 import com.mongodb.client.MongoCollection;
@@ -22,10 +23,10 @@ import com.mongodb.client.MongoDatabase;
 import de.bwaldvogel.mongo.MongoServer;
 import de.bwaldvogel.mongo.backend.memory.MemoryBackend;
 
-import com.myexam.parking.model.ParkingZone;
 import com.myexam.parking.repository.mongo.ParkingZoneMongoRepository;
 
 public class ParkingZoneMongoRepositoryTest {
+
 	private static MongoServer server;
 	private static InetSocketAddress serverAddress;
 
@@ -106,6 +107,71 @@ public class ParkingZoneMongoRepositoryTest {
 		parkingZoneRepository.delete("1");
 
 		assertThat(readAllParkingZonesFromDatabase()).isEmpty();
+	}
+
+	@Test
+	public void testSaveAllowsZeroCapacityAndZeroHourlyRate() {
+		ParkingZone parkingZone = new ParkingZone("2", "ParkingA", 0, 0.0, true);
+
+		parkingZoneRepository.save(parkingZone);
+
+		assertThat(parkingZoneRepository.findById("2")).isEqualTo(parkingZone);
+	}
+
+	@Test
+	public void testSaveThrowsExceptionWhenIdIsNull() {
+		ParkingZone invalidZone = new ParkingZone(null, "ParkingA", 100, 2.50, true);
+
+		assertThatThrownBy(() -> parkingZoneRepository.save(invalidZone)).isInstanceOf(IllegalArgumentException.class)
+				.hasMessage("ID cannot be null or blank");
+	}
+
+	@Test
+	public void testSaveThrowsExceptionWhenIdIsBlank() {
+		ParkingZone invalidZone = new ParkingZone("   ", "ParkingA", 100, 2.50, true);
+
+		assertThatThrownBy(() -> parkingZoneRepository.save(invalidZone)).isInstanceOf(IllegalArgumentException.class)
+				.hasMessage("ID cannot be null or blank");
+	}
+
+	@Test
+	public void testSaveThrowsExceptionWhenNameIsNull() {
+		ParkingZone invalidZone = new ParkingZone("1", null, 100, 2.50, true);
+
+		assertThatThrownBy(() -> parkingZoneRepository.save(invalidZone)).isInstanceOf(IllegalArgumentException.class)
+				.hasMessage("Name cannot be null or blank");
+	}
+
+	@Test
+	public void testSaveThrowsExceptionWhenNameIsBlank() {
+		ParkingZone invalidZone = new ParkingZone("1", "   ", 100, 2.50, true);
+
+		assertThatThrownBy(() -> parkingZoneRepository.save(invalidZone)).isInstanceOf(IllegalArgumentException.class)
+				.hasMessage("Name cannot be null or blank");
+	}
+
+	@Test
+	public void testSaveThrowsExceptionWhenCapacityIsNegative() {
+		ParkingZone invalidZone = new ParkingZone("1", "ParkingA", -5, 2.50, true);
+
+		assertThatThrownBy(() -> parkingZoneRepository.save(invalidZone)).isInstanceOf(IllegalArgumentException.class)
+				.hasMessage("Capacity cannot be negative or null");
+	}
+
+	@Test
+	public void testSaveThrowsExceptionWhenCapacityIsNull() {
+		ParkingZone invalidZone = new ParkingZone("1", "ParkingA", null, 2.50, true);
+
+		assertThatThrownBy(() -> parkingZoneRepository.save(invalidZone)).isInstanceOf(IllegalArgumentException.class)
+				.hasMessage("Capacity cannot be negative or null");
+	}
+
+	@Test
+	public void testSaveThrowsExceptionWhenHourlyRateIsNegative() {
+		ParkingZone invalidZone = new ParkingZone("1", "ParkingA", 100, -1.50, true);
+
+		assertThatThrownBy(() -> parkingZoneRepository.save(invalidZone)).isInstanceOf(IllegalArgumentException.class)
+				.hasMessage("Hourly rate cannot be negative");
 	}
 
 	private void addTestParkingZone(String id, String name, Integer capacity, double hourlyRate, boolean isAvailable) {
