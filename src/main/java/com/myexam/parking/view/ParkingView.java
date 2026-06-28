@@ -6,6 +6,7 @@ import com.myexam.parking.model.ParkingTicket;
 import com.myexam.parking.model.ParkingZone;
 
 public interface ParkingView {
+
 	void showAllParkingZones(List<ParkingZone> zones);
 
 	void parkingZoneAdded(ParkingZone zone);
@@ -16,4 +17,9 @@ public interface ParkingView {
 
 	void showAllParkingTickets(List<ParkingTicket> tickets);
 
+	void parkingTicketAdded(ParkingTicket ticket);
+
+	void parkingTicketRemoved(ParkingTicket ticket);
+
+	void showError(String message, ParkingTicket ticket);
 }
