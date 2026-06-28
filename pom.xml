@@ -69,4 +69,63 @@
     </dependency>
 
   </dependencies>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>3.5.5</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-surefire-report-plugin</artifactId>
+          <version>3.5.5</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+    <plugins>
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>0.8.11</version>
+
+        <configuration>
+          <excludes>
+            <exclude>**/model/*.*</exclude>
+            <exclude>**/app/**</exclude>
+          </excludes>
+        </configuration>
+
+        <executions>
+          <execution>
+            <goals>
+              <goal>prepare-agent</goal>
+              <goal>report</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.pitest</groupId>
+        <artifactId>pitest-maven</artifactId>
+        <version>1.15.2</version>
+        <configuration>
+          <targetClasses>
+            <param>com.myexam.parking.controller.*</param>
+            <param>com.myexam.parking.repository.*</param>
+          </targetClasses>
+          <targetTests>
+            <param>com.myexam.parking.controller.*</param>
+            <param>com.myexam.parking.repository.*</param>
+          </targetTests>
+
+          <excludedMethods>
+            <param>main</param>
+          </excludedMethods>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+
 </project>
