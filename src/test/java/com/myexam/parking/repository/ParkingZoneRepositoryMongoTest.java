@@ -78,6 +78,18 @@ public class ParkingZoneRepositoryMongoTest {
 				new ParkingZone("2", "ParkingB", 50, 3.00, false));
 	}
 
+	@Test
+	public void testFindByIdNotFound() {
+		assertThat(parkingZoneRepository.findById("1")).isNull();
+	}
+
+	@Test
+	public void testFindByIdFound() {
+		addTestParkingZone("1", "ParkingA", 100, 2.50, true);
+
+		assertThat(parkingZoneRepository.findById("1")).isEqualTo(new ParkingZone("1", "ParkingA", 100, 2.50, true));
+	}
+
 	private void addTestParkingZone(String id, String name, Integer capacity, double hourlyRate, boolean isAvailable) {
 		parkingZoneCollection.insertOne(new Document().append("id", id).append("name", name)
 				.append("capacity", capacity).append("hourlyRate", hourlyRate).append("isAvailable", isAvailable));

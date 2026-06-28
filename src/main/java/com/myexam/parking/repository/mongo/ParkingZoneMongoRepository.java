@@ -8,6 +8,7 @@ import org.bson.Document;
 
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.model.Filters;
 import com.myexam.parking.model.ParkingZone;
 import com.myexam.parking.repository.ParkingZoneRepository;
 
@@ -22,6 +23,17 @@ public class ParkingZoneMongoRepository implements ParkingZoneRepository {
 	public List<ParkingZone> findAll() {
 		return StreamSupport.stream(parkingZoneCollection.find().spliterator(), false)
 				.map(this::fromDocumentToParkingZone).collect(Collectors.toList());
+	}
+
+	@Override
+	public ParkingZone findById(String id) {
+		Document d = parkingZoneCollection.find(Filters.eq("id", id)).first();
+
+		if (d != null) {
+			return fromDocumentToParkingZone(d);
+		}
+
+		return null;
 	}
 
 	private ParkingZone fromDocumentToParkingZone(Document d) {
