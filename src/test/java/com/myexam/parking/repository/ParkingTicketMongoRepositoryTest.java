@@ -117,6 +117,93 @@ public class ParkingTicketMongoRepositoryTest {
 		assertThat(readAllTicketsFromDatabase()).isEmpty();
 	}
 
+	@Test
+	public void testSaveWithNullEntryAndNonNullExit() {
+		LocalDateTime exit = LocalDateTime.of(2026, 6, 20, 15, 0);
+		ParkingTicket ticket = new ParkingTicket("1", "ABC12345", "ParkingC", null, exit, false, 0.0);
+
+		ticketRepository.save(ticket);
+
+		assertThat(ticketRepository.findById("1")).isEqualTo(ticket);
+	}
+
+	@Test
+	public void testFindByIdWithMissingCostAndNullDates() {
+		Document doc = new Document().append("id", "2").append("vehiclePlate", "QWE123")
+				.append("parkingZoneId", "ParkingX").append("paid", false);
+
+		ticketCollection.insertOne(doc);
+
+		ParkingTicket retrieved = ticketRepository.findById("2");
+
+		assertThat(retrieved.getEntryTime()).isNull();
+		assertThat(retrieved.getExitTime()).isNull();
+		assertThat(retrieved.getTotalCost()).isEqualTo(0.0);
+	}
+
+	@Test
+	public void testSaveThrowsExceptionWhenIdIsNull() {
+		LocalDateTime entry = LocalDateTime.of(2026, 6, 20, 10, 0);
+		ParkingTicket invalidTicket = new ParkingTicket(null, "ABC1234", "ParkingAId", entry, null, false, 0.0);
+
+		assertThatThrownBy(() -> ticketRepository.save(invalidTicket)).isInstanceOf(IllegalArgumentException.class)
+				.hasMessage("ID cannot be null or blank");
+	}
+
+	@Test
+	public void testSaveThrowsExceptionWhenIdIsBlank() {
+		LocalDateTime entry = LocalDateTime.of(2026, 6, 20, 10, 0);
+		ParkingTicket invalidTicket = new ParkingTicket("   ", "ABC1234", "ParkingAId", entry, null, false, 0.0);
+
+		assertThatThrownBy(() -> ticketRepository.save(invalidTicket)).isInstanceOf(IllegalArgumentException.class)
+				.hasMessage("ID cannot be null or blank");
+	}
+
+	@Test
+	public void testSaveThrowsExceptionWhenVehiclePlateIsNull() {
+		LocalDateTime entry = LocalDateTime.of(2026, 6, 20, 10, 0);
+		ParkingTicket invalidTicket = new ParkingTicket("1", null, "ParkingAId", entry, null, false, 0.0);
+
+		assertThatThrownBy(() -> ticketRepository.save(invalidTicket)).isInstanceOf(IllegalArgumentException.class)
+				.hasMessage("Vehicle plate cannot be null or blank");
+	}
+
+	@Test
+	public void testSaveThrowsExceptionWhenVehiclePlateIsBlank() {
+		LocalDateTime entry = LocalDateTime.of(2026, 6, 20, 10, 0);
+		ParkingTicket invalidTicket = new ParkingTicket("1", "   ", "ParkingAId", entry, null, false, 0.0);
+
+		assertThatThrownBy(() -> ticketRepository.save(invalidTicket)).isInstanceOf(IllegalArgumentException.class)
+				.hasMessage("Vehicle plate cannot be null or blank");
+	}
+
+	@Test
+	public void testSaveThrowsExceptionWhenParkingZoneIdIsNull() {
+		LocalDateTime entry = LocalDateTime.of(2026, 6, 20, 10, 0);
+		ParkingTicket invalidTicket = new ParkingTicket("1", "ABC1234", null, entry, null, false, 0.0);
+
+		assertThatThrownBy(() -> ticketRepository.save(invalidTicket)).isInstanceOf(IllegalArgumentException.class)
+				.hasMessage("Parking zone ID cannot be null or blank");
+	}
+
+	@Test
+	public void testSaveThrowsExceptionWhenParkingZoneIdIsBlank() {
+		LocalDateTime entry = LocalDateTime.of(2026, 6, 20, 10, 0);
+		ParkingTicket invalidTicket = new ParkingTicket("1", "ABC1234", "   ", entry, null, false, 0.0);
+
+		assertThatThrownBy(() -> ticketRepository.save(invalidTicket)).isInstanceOf(IllegalArgumentException.class)
+				.hasMessage("Parking zone ID cannot be null or blank");
+	}
+
+	@Test
+	public void testSaveThrowsExceptionWhenTotalCostIsNegative() {
+		LocalDateTime entry = LocalDateTime.of(2026, 6, 20, 10, 0);
+		ParkingTicket invalidTicket = new ParkingTicket("1", "ABC1234", "ParkingAId", entry, null, false, -5.00);
+
+		assertThatThrownBy(() -> ticketRepository.save(invalidTicket)).isInstanceOf(IllegalArgumentException.class)
+				.hasMessage("Total cost cannot be negative");
+	}
+
 	private void addTestTicket(String id, String vehiclePlate, String parkingZoneId, LocalDateTime entryTime,
 			LocalDateTime exitTime, boolean paid, double totalCost) {
 
