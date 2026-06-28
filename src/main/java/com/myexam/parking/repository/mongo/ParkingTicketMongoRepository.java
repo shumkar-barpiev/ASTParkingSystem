@@ -40,6 +40,7 @@ public class ParkingTicketMongoRepository implements ParkingTicketRepository {
 
 	@Override
 	public void save(ParkingTicket ticket) {
+		validateParkingTicket(ticket);
 
 		ticketCollection.insertOne(new Document().append("id", ticket.getId())
 				.append("vehiclePlate", ticket.getVehiclePlate()).append("parkingZoneId", ticket.getParkingZoneId())
@@ -58,6 +59,21 @@ public class ParkingTicketMongoRepository implements ParkingTicketRepository {
 				d.getString("entryTime") != null ? LocalDateTime.parse(d.getString("entryTime")) : null,
 				d.getString("exitTime") != null ? LocalDateTime.parse(d.getString("exitTime")) : null,
 				d.getBoolean("paid", false), d.getDouble("totalCost") != null ? d.getDouble("totalCost") : 0.0);
+	}
+
+	private void validateParkingTicket(ParkingTicket ticket) {
+		if (ticket.getId() == null || ticket.getId().trim().isEmpty()) {
+			throw new IllegalArgumentException("ID cannot be null or blank");
+		}
+		if (ticket.getVehiclePlate() == null || ticket.getVehiclePlate().trim().isEmpty()) {
+			throw new IllegalArgumentException("Vehicle plate cannot be null or blank");
+		}
+		if (ticket.getParkingZoneId() == null || ticket.getParkingZoneId().trim().isEmpty()) {
+			throw new IllegalArgumentException("Parking zone ID cannot be null or blank");
+		}
+		if (ticket.getTotalCost() < 0) {
+			throw new IllegalArgumentException("Total cost cannot be negative");
+		}
 	}
 
 }
