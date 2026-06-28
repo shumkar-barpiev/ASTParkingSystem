@@ -9,4 +9,7 @@ public interface ParkingZoneRepository {
 
 	public ParkingZone findById(String id);
 
+	public void save(ParkingZone parkingZone);
+
+	public void delete(String id);
 }
