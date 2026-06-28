@@ -47,4 +47,8 @@ public class ParkingController {
 		parkingView.parkingZoneRemoved(parkingZone);
 	}
 
+	public void allParkingTickets() {
+		parkingView.showAllParkingTickets(parkingTicketRepository.findAll());
+	}
+
 }
