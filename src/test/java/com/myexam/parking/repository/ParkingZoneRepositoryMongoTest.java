@@ -3,12 +3,16 @@ package com.myexam.parking.repository;
 import static org.assertj.core.api.Assertions.*;
 
 import java.net.InetSocketAddress;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import org.bson.Document;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Test;
 
 import com.mongodb.MongoClient;
 import com.mongodb.ServerAddress;
@@ -18,6 +22,7 @@ import com.mongodb.client.MongoDatabase;
 import de.bwaldvogel.mongo.MongoServer;
 import de.bwaldvogel.mongo.backend.memory.MemoryBackend;
 
+import com.myexam.parking.model.ParkingZone;
 import com.myexam.parking.repository.mongo.ParkingZoneMongoRepository;
 
 public class ParkingZoneRepositoryMongoTest {
@@ -57,5 +62,24 @@ public class ParkingZoneRepositoryMongoTest {
 	@After
 	public void tearDown() {
 		client.close();
+	}
+
+	@Test
+	public void testFindAllWhenDatabaseIsEmpty() {
+		assertThat(parkingZoneRepository.findAll()).isEmpty();
+	}
+
+	@Test
+	public void testFindAllWhenDatabaseIsNotEmpty() {
+		addTestParkingZone("1", "ParkingA", 100, 2.50, true);
+		addTestParkingZone("2", "ParkingB", 50, 3.00, false);
+
+		assertThat(parkingZoneRepository.findAll()).containsExactly(new ParkingZone("1", "ParkingA", 100, 2.50, true),
+				new ParkingZone("2", "ParkingB", 50, 3.00, false));
+	}
+
+	private void addTestParkingZone(String id, String name, Integer capacity, double hourlyRate, boolean isAvailable) {
+		parkingZoneCollection.insertOne(new Document().append("id", id).append("name", name)
+				.append("capacity", capacity).append("hourlyRate", hourlyRate).append("isAvailable", isAvailable));
 	}
 }
