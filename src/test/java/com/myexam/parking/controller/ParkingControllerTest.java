@@ -1,8 +1,7 @@
 package com.myexam.parking.controller;
 
-import static java.util.Arrays.asList;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import static java.util.Arrays.asList;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -131,6 +130,148 @@ public class ParkingControllerTest {
 		parkingController.allParkingTickets();
 
 		verify(parkingView).showAllParkingTickets(tickets);
+	}
+
+	@Test
+	public void testNewParkingTicketWhenTicketDoesNotAlreadyExist() {
+		LocalDateTime entry = LocalDateTime.of(2026, 6, 20, 10, 0);
+		ParkingTicket ticket = new ParkingTicket("1", "ABC1234", "ParkingA", entry, null, false, 0.0);
+
+		when(parkingTicketRepository.findById("1")).thenReturn(null);
+
+		parkingController.newParkingTicket(ticket);
+
+		InOrder inOrder = inOrder(parkingTicketRepository, parkingView);
+		inOrder.verify(parkingTicketRepository).save(ticket);
+		inOrder.verify(parkingView).parkingTicketAdded(ticket);
+	}
+
+	@Test
+	public void testNewParkingTicketWhenTicketAlreadyExists() {
+		LocalDateTime entry = LocalDateTime.of(2026, 6, 20, 10, 0);
+		ParkingTicket ticketToAdd = new ParkingTicket("1", "ABC1234", "ParkingA", entry, null, false, 0.0);
+		ParkingTicket existingTicket = new ParkingTicket("1", "QWE123", "ParkingB", entry, null, false, 0.0);
+
+		when(parkingTicketRepository.findById("1")).thenReturn(existingTicket);
+
+		parkingController.newParkingTicket(ticketToAdd);
+
+		verify(parkingView).showError("Already existing parking ticket with id 1", existingTicket);
+		verifyNoMoreInteractions(ignoreStubs(parkingTicketRepository));
+	}
+
+	@Test
+	public void testDeleteParkingTicketWhenTicketExists() {
+		LocalDateTime entry = LocalDateTime.of(2026, 6, 20, 10, 0);
+		ParkingTicket ticketToDelete = new ParkingTicket("1", "ABC1234", "ParkingA", entry, null, false, 0.0);
+
+		when(parkingTicketRepository.findById("1")).thenReturn(ticketToDelete);
+
+		parkingController.deleteParkingTicket(ticketToDelete);
+
+		InOrder inOrder = inOrder(parkingTicketRepository, parkingView);
+		inOrder.verify(parkingTicketRepository).delete("1");
+		inOrder.verify(parkingView).parkingTicketRemoved(ticketToDelete);
+	}
+
+	@Test
+	public void testDeleteParkingTicketWhenTicketDoesNotExist() {
+		LocalDateTime entry = LocalDateTime.of(2026, 6, 20, 10, 0);
+		ParkingTicket ticket = new ParkingTicket("1", "ABC1234", "ParkingA", entry, null, false, 0.0);
+
+		when(parkingTicketRepository.findById("1")).thenReturn(null);
+
+		parkingController.deleteParkingTicket(ticket);
+
+		verify(parkingView).showError("No existing parking ticket with id 1", ticket);
+		verifyNoMoreInteractions(ignoreStubs(parkingTicketRepository));
+	}
+
+	@Test
+	public void testNewParkingTicketShouldSaveAndNotifyViewWhenAllChecksPass() {
+		ParkingZone zone = new ParkingZone("z1", "ParkingA", 2, 2.5, true);
+		ParkingTicket ticket = new ParkingTicket("t1", "ABC123", "z1", LocalDateTime.of(2026, 6, 26, 9, 0), null, false,
+				0.0);
+
+		when(parkingTicketRepository.findById("t1")).thenReturn(null);
+		when(parkingTicketRepository.findActiveTicketByVehiclePlate("AB123")).thenReturn(null);
+		when(parkingZoneRepository.findById("z1")).thenReturn(zone);
+		when(parkingTicketRepository.countActiveTicketsByZoneId("z1")).thenReturn(1L);
+		parkingController.newParkingTicket(ticket);
+
+		verify(parkingTicketRepository).save(ticket);
+		verify(parkingView).parkingTicketAdded(ticket);
+	}
+
+	@Test
+	public void testNewParkingTicketShouldNotCheckZoneCapacityWhenPlateAlreadyActive() {
+		ParkingTicket ticket = new ParkingTicket("t1", "ABC123", "z1", LocalDateTime.of(2026, 6, 26, 11, 0), null,
+				false, 0.0);
+
+		ParkingTicket existingActiveTicket = new ParkingTicket("t1", "ABC123", "z1",
+				LocalDateTime.of(2026, 6, 26, 9, 0), null, false, 0.0);
+
+		when(parkingTicketRepository.findById("t1")).thenReturn(null);
+		when(parkingTicketRepository.findActiveTicketByVehiclePlate("ABC123")).thenReturn(existingActiveTicket);
+
+		parkingController.newParkingTicket(ticket);
+
+		verify(parkingZoneRepository, never()).findById(any());
+		verify(parkingTicketRepository, never()).countActiveTicketsByZoneId(any());
+	}
+
+	@Test
+	public void testNewParkingTicketShouldShowErrorWhenZoneIsFull() {
+		ParkingZone zone = new ParkingZone("z1", "ParkingA", 2, 2.5, true);
+		ParkingTicket ticket = new ParkingTicket("t1", "ABC123", "z1", LocalDateTime.of(2026, 6, 26, 11, 0), null,
+				false, 0.0);
+
+		when(parkingTicketRepository.findById("t3")).thenReturn(null);
+		when(parkingTicketRepository.findActiveTicketByVehiclePlate("CDF456")).thenReturn(null);
+		when(parkingZoneRepository.findById("z1")).thenReturn(zone);
+		when(parkingTicketRepository.countActiveTicketsByZoneId("z1")).thenReturn(2L);
+
+		parkingController.newParkingTicket(ticket);
+
+		verify(parkingView).showError("Parking zone ParkingA is full", ticket);
+		verify(parkingTicketRepository, never()).save(any());
+		verify(parkingView, never()).parkingTicketAdded(any());
+	}
+
+	@Test
+	public void testNewParkingTicketShouldShowErrorWhenRepositoryThrowsIllegalArgument() {
+		ParkingZone zone = new ParkingZone("z1", "ParkingA", 2, 2.5, true);
+		ParkingTicket ticket = new ParkingTicket("t1", "ABC123", "z1", LocalDateTime.of(2026, 6, 26, 9, 0), null, false,
+				0.0);
+
+		when(parkingTicketRepository.findById("t1")).thenReturn(null);
+		when(parkingTicketRepository.findActiveTicketByVehiclePlate("ABC123")).thenReturn(null);
+		when(parkingZoneRepository.findById("z1")).thenReturn(zone);
+		when(parkingTicketRepository.countActiveTicketsByZoneId("z1")).thenReturn(1L);
+		doThrow(new IllegalArgumentException("Vehicle plate cannot be null or blank")).when(parkingTicketRepository)
+				.save(ticket);
+
+		parkingController.newParkingTicket(ticket);
+
+		verify(parkingView).showError("Vehicle plate cannot be null or blank", ticket);
+		verify(parkingView, never()).parkingTicketAdded(any());
+	}
+
+	@Test
+	public void testNewParkingTicketShouldShowErrorWithCorrectMessageWhenVehicleAlreadyHasActiveTicket() {
+		ParkingTicket newTicket = new ParkingTicket("t2", "AB123", "z1", LocalDateTime.of(2026, 6, 26, 10, 0), null,
+				false, 0.0);
+		ParkingTicket activeTicket = new ParkingTicket("t1", "AB123", "z1", LocalDateTime.of(2026, 6, 26, 9, 0), null,
+				false, 0.0);
+
+		when(parkingTicketRepository.findById("t2")).thenReturn(null);
+		when(parkingTicketRepository.findActiveTicketByVehiclePlate("AB123")).thenReturn(activeTicket);
+
+		parkingController.newParkingTicket(newTicket);
+
+		verify(parkingView).showError("Vehicle AB123 already has an active ticket", newTicket);
+		verify(parkingView, never()).parkingTicketAdded(any());
+		verify(parkingTicketRepository, never()).save(any());
 	}
 
 }
