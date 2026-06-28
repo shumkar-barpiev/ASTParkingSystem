@@ -25,7 +25,7 @@ import de.bwaldvogel.mongo.backend.memory.MemoryBackend;
 import com.myexam.parking.model.ParkingZone;
 import com.myexam.parking.repository.mongo.ParkingZoneMongoRepository;
 
-public class ParkingZoneRepositoryMongoTest {
+public class ParkingZoneMongoRepositoryTest {
 	private static MongoServer server;
 	private static InetSocketAddress serverAddress;
 
