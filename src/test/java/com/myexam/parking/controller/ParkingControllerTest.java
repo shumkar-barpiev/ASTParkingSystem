@@ -4,6 +4,7 @@ import static java.util.Arrays.asList;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.junit.After;
@@ -14,6 +15,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import com.myexam.parking.model.ParkingTicket;
 import com.myexam.parking.model.ParkingZone;
 import com.myexam.parking.repository.*;
 import com.myexam.parking.view.ParkingView;
@@ -117,6 +119,18 @@ public class ParkingControllerTest {
 
 		verify(parkingView).showError("No existing parking zone with id 1", zone);
 		verifyNoMoreInteractions(ignoreStubs(parkingZoneRepository));
+	}
+
+	@Test
+	public void testAllParkingTickets() {
+		LocalDateTime entry = LocalDateTime.of(2026, 6, 20, 10, 0);
+		List<ParkingTicket> tickets = asList(new ParkingTicket("1", "ABC1234", "ParkingA", entry, null, false, 0.0));
+
+		when(parkingTicketRepository.findAll()).thenReturn(tickets);
+
+		parkingController.allParkingTickets();
+
+		verify(parkingView).showAllParkingTickets(tickets);
 	}
 
 }
