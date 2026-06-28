@@ -54,6 +54,22 @@ public class ParkingTicketMongoRepository implements ParkingTicketRepository {
 		ticketCollection.deleteOne(Filters.eq("id", id));
 	}
 
+	@Override
+	public long countActiveTicketsByZoneId(String zoneId) {
+		return ticketCollection
+				.countDocuments(Filters.and(Filters.eq("parkingZoneId", zoneId), Filters.eq("exitTime", null)));
+	}
+
+	@Override
+	public ParkingTicket findActiveTicketByVehiclePlate(String vehiclePlate) {
+		Document d = ticketCollection
+				.find(Filters.and(Filters.eq("vehiclePlate", vehiclePlate), Filters.eq("exitTime", null))).first();
+		if (d != null) {
+			return fromDocumentToParkingTicket(d);
+		}
+		return null;
+	}
+
 	private ParkingTicket fromDocumentToParkingTicket(Document d) {
 		return new ParkingTicket(d.getString("id"), d.getString("vehiclePlate"), d.getString("parkingZoneId"),
 				d.getString("entryTime") != null ? LocalDateTime.parse(d.getString("entryTime")) : null,
