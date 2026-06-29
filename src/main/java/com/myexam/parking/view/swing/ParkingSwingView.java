@@ -3,7 +3,6 @@ package com.myexam.parking.view.swing;
 import com.myexam.parking.controller.*;
 import com.myexam.parking.model.*;
 import com.myexam.parking.view.ParkingView;
-import com.myexam.parking.view.swing.*;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -229,6 +228,40 @@ public class ParkingSwingView extends JFrame implements ParkingView {
 		gbc.weightx = 0;
 		parkingTicketFormPanel.add(ticketSaveBtn, gbc);
 
+		ticketSaveBtn.addActionListener(e -> {
+			try {
+				String vehiclePlate = vehiclePlateTextField.getText().trim();
+				String zoneId = (String) parkingZoneComboBox.getSelectedItem();
+
+				if (vehiclePlate.isEmpty()) {
+					showError("Vehicle plate cannot be empty.", new ParkingTicket());
+					return;
+				}
+				if (zoneId == null) {
+					showError("Please select a parking zone.", new ParkingTicket());
+					return;
+				}
+
+				java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter
+						.ofPattern("yyyy-MM-dd HH:mm");
+				java.time.LocalDateTime entryTime = java.time.LocalDateTime
+						.parse(entryTimeTextField.getText().trim().replace("T", " "), formatter);
+				java.time.LocalDateTime exitTime = java.time.LocalDateTime
+						.parse(exitTimeTextField.getText().trim().replace("T", " "), formatter);
+
+				boolean paid = isPaidCheckBox.isSelected();
+				String id = java.util.UUID.randomUUID().toString();
+
+				ParkingTicket newTicket = new ParkingTicket(id, vehiclePlate, zoneId, entryTime, exitTime, paid, 0.0);
+
+				if (parkingController != null) {
+					parkingController.newParkingTicket(newTicket);
+				}
+			} catch (java.time.format.DateTimeParseException ex) {
+				showError("Entry/Exit Time must be in format: 2026-06-26 09:00", new ParkingTicket());
+			}
+		});
+
 		JScrollPane parkingTicketTableScrollPane = new JScrollPane();
 		parkingTicketTableScrollPane.setName("parkingTicketTableScrollPane");
 		parkingTicketPanel.add(parkingTicketTableScrollPane, BorderLayout.CENTER);
@@ -311,20 +344,32 @@ public class ParkingSwingView extends JFrame implements ParkingView {
 
 	@Override
 	public void parkingTicketAdded(ParkingTicket ticket) {
-		// TODO Auto-generated method stub
+		DefaultTableModel model = (DefaultTableModel) parkingTicketTable.getModel();
 
+		setupDeleteColumn(parkingTicketTable, 7, true);
+
+		parkingTicketByIdMap.put(ticket.getId(), ticket);
+		model.addRow(ticketToRow(ticket));
+
+		clearTicketForm();
+		resetErrorLabel();
 	}
 
 	@Override
 	public void parkingTicketRemoved(ParkingTicket ticket) {
-		// TODO Auto-generated method stub
-
+		DefaultTableModel model = (DefaultTableModel) parkingTicketTable.getModel();
+		for (int i = 0; i < model.getRowCount(); i++) {
+			if (ticket.getId().equals(model.getValueAt(i, 0))) {
+				model.removeRow(i);
+				break;
+			}
+		}
+		resetErrorLabel();
 	}
 
 	@Override
 	public void showError(String message, ParkingTicket ticket) {
-		// TODO Auto-generated method stub
-
+		errorMessageLabel.setText(message);
 	}
 
 	public void setParkingController(ParkingController parkingController) {
@@ -339,6 +384,10 @@ public class ParkingSwingView extends JFrame implements ParkingView {
 		return parkingTicketByIdMap;
 	}
 
+	public JTable getTableParkingZones() {
+		return parkingZoneTable;
+	}
+
 	private void resetErrorLabel() {
 		errorMessageLabel.setText(" ");
 	}
@@ -348,6 +397,15 @@ public class ParkingSwingView extends JFrame implements ParkingView {
 		capacityTextField.setText("");
 		rateTextField.setText("");
 		isAvailableCheckBox.setSelected(false);
+	}
+
+	private void clearTicketForm() {
+		vehiclePlateTextField.setText("");
+		entryTimeTextField.setText("");
+		exitTimeTextField.setText("");
+		isPaidCheckBox.setSelected(false);
+		if (parkingZoneComboBox.getItemCount() > 0)
+			parkingZoneComboBox.setSelectedIndex(0);
 	}
 
 	private void setupDeleteColumn(JTable table, int columnIndex, boolean isTicketTable) {
