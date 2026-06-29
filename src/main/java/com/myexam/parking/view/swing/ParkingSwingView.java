@@ -115,6 +115,24 @@ public class ParkingSwingView extends JFrame implements ParkingView {
 		parkingZoneSaveBtn.setName("parkingZoneSaveButton");
 		parkingZoneFormPanel.add(parkingZoneSaveBtn);
 
+		parkingZoneSaveBtn.addActionListener(e -> {
+			try {
+				String id = java.util.UUID.randomUUID().toString();
+				String name = nameTextField.getText().trim();
+				int capacity = Integer.parseInt(capacityTextField.getText().trim());
+				double rate = Double.parseDouble(rateTextField.getText().trim());
+				boolean isAvailable = isAvailableCheckBox.isSelected();
+
+				ParkingZone newZone = new ParkingZone(id, name, capacity, rate, isAvailable);
+
+				if (parkingController != null) {
+					parkingController.newParkingZone(newZone);
+				}
+			} catch (NumberFormatException ex) {
+				showError("Capacity and Rate must be valid numbers.", new ParkingZone());
+			}
+		});
+
 		JScrollPane parkingZoneTableScrollPane = new JScrollPane();
 		parkingZoneTableScrollPane.setName("parkingZoneTableScrollPane");
 		parkingPlacePanel.add(parkingZoneTableScrollPane, BorderLayout.CENTER);
@@ -244,20 +262,37 @@ public class ParkingSwingView extends JFrame implements ParkingView {
 
 	@Override
 	public void parkingZoneAdded(ParkingZone zone) {
-		// TODO Auto-generated method stub
+		DefaultTableModel model = (DefaultTableModel) parkingZoneTable.getModel();
 
+		setupDeleteColumn(parkingZoneTable, 5, false);
+
+		parkingZoneComboBox.addItem(zone.getId());
+		parkingZoneByIdMap.put(zone.getId(), zone);
+
+		model.addRow(new Object[] { zone.getId(), zone.getName(), zone.getCapacity(), zone.getHourlyRate(),
+				zone.isAvailable(), "Delete" });
+
+		clearZoneForm();
+		resetErrorLabel();
 	}
 
 	@Override
 	public void parkingZoneRemoved(ParkingZone zone) {
-		// TODO Auto-generated method stub
-
+		DefaultTableModel model = (DefaultTableModel) parkingZoneTable.getModel();
+		for (int i = 0; i < model.getRowCount(); i++) {
+			if (zone.getId().equals(model.getValueAt(i, 0))) {
+				model.removeRow(i);
+				break;
+			}
+		}
+		parkingZoneComboBox.removeItem(zone.getId());
+		parkingZoneByIdMap.remove(zone.getId());
+		resetErrorLabel();
 	}
 
 	@Override
 	public void showError(String message, ParkingZone zone) {
-		// TODO Auto-generated method stub
-
+		errorMessageLabel.setText(message);
 	}
 
 	@Override
@@ -302,6 +337,17 @@ public class ParkingSwingView extends JFrame implements ParkingView {
 
 	Map<String, ParkingTicket> getParkingTicketByIdMap() {
 		return parkingTicketByIdMap;
+	}
+
+	private void resetErrorLabel() {
+		errorMessageLabel.setText(" ");
+	}
+
+	private void clearZoneForm() {
+		nameTextField.setText("");
+		capacityTextField.setText("");
+		rateTextField.setText("");
+		isAvailableCheckBox.setSelected(false);
 	}
 
 	private void setupDeleteColumn(JTable table, int columnIndex, boolean isTicketTable) {
