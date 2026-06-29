@@ -105,14 +105,6 @@ public class ParkingSwingViewTest extends AssertJSwingJUnitTestCase {
 
 	@Test
 	@GUITest
-	public void testShowErrorForZoneShouldShowMessageInErrorLabel() {
-		GuiActionRunner.execute(() -> parkingSwingView.showError("error message", zone("1", "Parking A")));
-
-		window.label("errorMessageLabel").requireText("error message");
-	}
-
-	@Test
-	@GUITest
 	public void testShowAllParkingTicketsShouldAddTicketsToTable() {
 		ParkingZone zone = zone("z1", "Parking A");
 		GuiActionRunner.execute(() -> parkingSwingView.showAllParkingZones(Arrays.asList(zone)));
@@ -128,6 +120,129 @@ public class ParkingSwingViewTest extends AssertJSwingJUnitTestCase {
 		assertThat(contents[0][1]).isEqualTo("AB123");
 		assertThat(contents[1][0]).isEqualTo("t2");
 		assertThat(contents[1][1]).isEqualTo("CD456");
+	}
+
+	@Test
+	@GUITest
+	public void testShowAllParkingZonesShouldClearExistingRowsBeforeAdding() {
+		ParkingZone zone1 = zone("1", "Parking A");
+		GuiActionRunner.execute(() -> parkingSwingView.showAllParkingZones(Arrays.asList(zone1)));
+		GuiActionRunner.execute(() -> parkingSwingView.showAllParkingZones(Arrays.asList(zone1)));
+
+		assertThat(window.table("parkingZoneTable").contents().length).isEqualTo(1);
+	}
+
+	@Test
+	@GUITest
+	public void testShowAllParkingZonesShouldPopulateZoneComboBox() {
+		ParkingZone zone1 = zone("1", "Parking A");
+		ParkingZone zone2 = zone("2", "Parking B");
+		GuiActionRunner.execute(() -> parkingSwingView.showAllParkingZones(Arrays.asList(zone1, zone2)));
+
+		window.tabbedPane().selectTab("Ticket Management");
+		assertThat(window.comboBox("parkingZoneComboBox").contents()).containsExactly("1", "2");
+	}
+
+	@Test
+	@GUITest
+	public void testShowAllParkingZonesShouldClearComboBoxBeforeRepopulating() {
+		ParkingZone zone1 = zone("1", "Parking A");
+		GuiActionRunner.execute(() -> parkingSwingView.showAllParkingZones(Arrays.asList(zone1)));
+		GuiActionRunner.execute(() -> parkingSwingView.showAllParkingZones(Arrays.asList(zone1)));
+
+		window.tabbedPane().selectTab("Ticket Management");
+		assertThat(window.comboBox("parkingZoneComboBox").contents()).hasSize(1);
+	}
+
+	@Test
+	@GUITest
+	public void testParkingZoneAddedShouldAddRowToTable() {
+		ParkingZone zone = zone("1", "Parking A");
+		GuiActionRunner.execute(() -> parkingSwingView.parkingZoneAdded(zone));
+
+		String[][] contents = window.table("parkingZoneTable").contents();
+		assertThat(contents.length).isEqualTo(1);
+		assertThat(contents[0][0]).isEqualTo("1");
+		assertThat(contents[0][1]).isEqualTo("Parking A");
+	}
+
+	@Test
+	@GUITest
+	public void testParkingZoneAddedShouldClearZoneForm() {
+		window.textBox("nameTextField").enterText("Parking A");
+		window.textBox("capacityTextField").enterText("10");
+		window.textBox("rateTextField").enterText("2.5");
+		window.checkBox("isAvailableCheckBox").check();
+
+		GuiActionRunner.execute(() -> parkingSwingView.parkingZoneAdded(zone("1", "Parking A")));
+
+		window.textBox("nameTextField").requireText("");
+		window.textBox("capacityTextField").requireText("");
+		window.textBox("rateTextField").requireText("");
+		window.checkBox("isAvailableCheckBox").requireNotSelected();
+	}
+
+	@Test
+	@GUITest
+	public void testParkingZoneAddedShouldAddZoneToComboBox() {
+		ParkingZone zone = zone("1", "Parking A");
+		GuiActionRunner.execute(() -> parkingSwingView.parkingZoneAdded(zone));
+
+		window.tabbedPane().selectTab("Ticket Management");
+		assertThat(window.comboBox("parkingZoneComboBox").contents()).containsExactly("1");
+	}
+
+	@Test
+	@GUITest
+	public void testParkingZoneAddedShouldResetErrorLabel() {
+		GuiActionRunner.execute(() -> parkingSwingView.showError("some error", new ParkingZone()));
+		GuiActionRunner.execute(() -> parkingSwingView.parkingZoneAdded(zone("1", "Parking A")));
+
+		window.label("errorMessageLabel").requireText(" ");
+	}
+
+	@Test
+	@GUITest
+	public void testParkingZoneRemovedShouldRemoveRowFromTable() {
+		ParkingZone zone1 = zone("1", "Parking A");
+		ParkingZone zone2 = zone("2", "Parking B");
+		GuiActionRunner.execute(() -> parkingSwingView.showAllParkingZones(Arrays.asList(zone1, zone2)));
+		GuiActionRunner.execute(() -> parkingSwingView.parkingZoneRemoved(zone1));
+
+		String[][] contents = window.table("parkingZoneTable").contents();
+		assertThat(contents.length).isEqualTo(1);
+		assertThat(contents[0][0]).isEqualTo("2");
+	}
+
+	@Test
+	@GUITest
+	public void testParkingZoneRemovedShouldRemoveZoneFromComboBox() {
+		ParkingZone zone1 = zone("1", "Parking A");
+		ParkingZone zone2 = zone("2", "Parking B");
+		GuiActionRunner.execute(() -> parkingSwingView.showAllParkingZones(Arrays.asList(zone1, zone2)));
+		GuiActionRunner.execute(() -> parkingSwingView.parkingZoneRemoved(zone1));
+
+		window.tabbedPane().selectTab("Ticket Management");
+		assertThat(window.comboBox("parkingZoneComboBox").contents()).containsExactly("2");
+	}
+
+	@Test
+	@GUITest
+	public void testParkingZoneRemovedShouldResetErrorLabel() {
+		ParkingZone zone = zone("1", "Parking A");
+		GuiActionRunner.execute(() -> parkingSwingView.showAllParkingZones(Arrays.asList(zone)));
+		GuiActionRunner.execute(() -> parkingSwingView.showError("some error", new ParkingZone()));
+		GuiActionRunner.execute(() -> parkingSwingView.parkingZoneRemoved(zone));
+
+		window.label("errorMessageLabel").requireText(" ");
+	}
+
+	@Test
+	@GUITest
+	public void testShowErrorForZoneShouldShowMessageInErrorLabel() {
+		GuiActionRunner.execute(() -> parkingSwingView.showError("error message", zone("1", "Parking A")));
+
+		window.label("errorMessageLabel").requireText("error message");
 	}
 
 	@Test
