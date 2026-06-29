@@ -8,6 +8,7 @@ import com.myexam.parking.view.swing.*;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -23,6 +24,8 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 
 public class ParkingSwingView extends JFrame implements ParkingView {
+	private static final long serialVersionUID = 1L;
+
 	private JPanel mainPanel;
 
 	private JTextField nameTextField;
@@ -222,8 +225,21 @@ public class ParkingSwingView extends JFrame implements ParkingView {
 
 	@Override
 	public void showAllParkingZones(List<ParkingZone> zones) {
-		// TODO Auto-generated method stub
+		DefaultTableModel model = (DefaultTableModel) parkingZoneTable.getModel();
+		model.setRowCount(0);
 
+		parkingZoneComboBox.removeAllItems();
+		parkingZoneByIdMap.clear();
+
+		setupDeleteColumn(parkingZoneTable, 5, false);
+
+		for (ParkingZone zone : zones) {
+			parkingZoneComboBox.addItem(zone.getId());
+			parkingZoneByIdMap.put(zone.getId(), zone);
+
+			model.addRow(new Object[] { zone.getId(), zone.getName(), zone.getCapacity(), zone.getHourlyRate(),
+					zone.isAvailable(), "Delete" });
+		}
 	}
 
 	@Override
@@ -246,8 +262,16 @@ public class ParkingSwingView extends JFrame implements ParkingView {
 
 	@Override
 	public void showAllParkingTickets(List<ParkingTicket> tickets) {
-		// TODO Auto-generated method stub
+		DefaultTableModel model = (DefaultTableModel) parkingTicketTable.getModel();
+		model.setRowCount(0);
 
+		parkingTicketByIdMap.clear();
+		setupDeleteColumn(parkingTicketTable, 7, true);
+
+		for (ParkingTicket ticket : tickets) {
+			parkingTicketByIdMap.put(ticket.getId(), ticket);
+			model.addRow(ticketToRow(ticket));
+		}
 	}
 
 	@Override
@@ -270,6 +294,98 @@ public class ParkingSwingView extends JFrame implements ParkingView {
 
 	public void setParkingController(ParkingController parkingController) {
 		this.parkingController = parkingController;
+	}
+
+	Map<String, ParkingZone> getParkingZoneByIdMap() {
+		return parkingZoneByIdMap;
+	}
+
+	Map<String, ParkingTicket> getParkingTicketByIdMap() {
+		return parkingTicketByIdMap;
+	}
+
+	private void setupDeleteColumn(JTable table, int columnIndex, boolean isTicketTable) {
+		table.setRowHeight(32);
+		table.getColumnModel().getColumn(columnIndex).setCellRenderer(new DeleteButtonRenderer());
+		table.getColumnModel().getColumn(columnIndex).setCellEditor(new DeleteButtonEditor(table, isTicketTable));
+	}
+
+	private Object[] ticketToRow(ParkingTicket ticket) {
+		ParkingZone zone = parkingZoneByIdMap.get(ticket.getParkingZoneId());
+
+		String zoneName = zone != null ? zone.getName() : ticket.getParkingZoneId();
+
+		return new Object[] { ticket.getId(), ticket.getVehiclePlate(), zoneName, ticket.getEntryTime(),
+				ticket.getExitTime(), ticket.isPaid(), ticket.getTotalCost(), "Delete" };
+	}
+
+	private static class DeleteButtonRenderer extends JButton implements javax.swing.table.TableCellRenderer {
+		private static final long serialVersionUID = 1L;
+
+		DeleteButtonRenderer() {
+			setText("Delete");
+		}
+
+		@Override
+		public java.awt.Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
+				boolean hasFocus, int row, int column) {
+			return this;
+		}
+	}
+
+	private class DeleteButtonEditor extends javax.swing.AbstractCellEditor
+			implements javax.swing.table.TableCellEditor {
+		private static final long serialVersionUID = 1L;
+		private final JButton button = new JButton("Delete");
+		private String idToDelete;
+
+		DeleteButtonEditor(JTable table, boolean isTicketTable) {
+			button.addActionListener(e -> {
+				String id = idToDelete;
+				fireEditingStopped();
+
+				javax.swing.SwingUtilities.invokeLater(() -> deleteRowById(id, isTicketTable));
+			});
+		}
+
+		@Override
+		public java.awt.Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row,
+				int column) {
+
+			int modelRow = table.convertRowIndexToModel(row);
+			idToDelete = table.getModel().getValueAt(modelRow, 0).toString();
+
+			return button;
+		}
+
+		@Override
+		public Object getCellEditorValue() {
+			return "Delete";
+		}
+	}
+
+	private void deleteRowById(String id, boolean isTicketTable) {
+		if (parkingController == null || id == null) {
+			return;
+		}
+
+		if (isTicketTable) {
+			ParkingTicket ticket = parkingTicketByIdMap.get(id);
+
+			if (ticket != null) {
+				parkingController.deleteParkingTicket(ticket);
+			} else {
+				showError("No existing parking ticket with id " + id, new ParkingTicket());
+			}
+		} else {
+			ParkingZone zone = parkingZoneByIdMap.get(id);
+
+			if (zone != null) {
+				parkingController.deleteParkingZone(zone);
+			} else {
+				showError("No existing parking zone with id " + id, new ParkingZone());
+			}
+		}
 	}
 
 }

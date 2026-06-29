@@ -87,4 +87,101 @@ public class ParkingSwingViewTest extends AssertJSwingJUnitTestCase {
 
 		window.label("errorMessageLabel").requireText(" ");
 	}
+
+	@Test
+	@GUITest
+	public void testShowAllParkingZonesShouldAddZonesToTable() {
+		ParkingZone zone1 = zone("1", "Parking A");
+		ParkingZone zone2 = zone("2", "Parking B");
+		GuiActionRunner.execute(() -> parkingSwingView.showAllParkingZones(Arrays.asList(zone1, zone2)));
+
+		String[][] contents = window.table("parkingZoneTable").contents();
+		assertThat(contents.length).isEqualTo(2);
+		assertThat(contents[0][0]).isEqualTo("1");
+		assertThat(contents[0][1]).isEqualTo("Parking A");
+		assertThat(contents[1][0]).isEqualTo("2");
+		assertThat(contents[1][1]).isEqualTo("Parking B");
+	}
+
+	@Test
+	@GUITest
+	public void testShowErrorForZoneShouldShowMessageInErrorLabel() {
+		GuiActionRunner.execute(() -> parkingSwingView.showError("error message", zone("1", "Parking A")));
+
+		window.label("errorMessageLabel").requireText("error message");
+	}
+
+	@Test
+	@GUITest
+	public void testShowAllParkingTicketsShouldAddTicketsToTable() {
+		ParkingZone zone = zone("z1", "Parking A");
+		GuiActionRunner.execute(() -> parkingSwingView.showAllParkingZones(Arrays.asList(zone)));
+
+		ParkingTicket ticket1 = ticket("t1", "AB123", "z1");
+		ParkingTicket ticket2 = ticket("t2", "CD456", "z1");
+		GuiActionRunner.execute(() -> parkingSwingView.showAllParkingTickets(Arrays.asList(ticket1, ticket2)));
+
+		window.tabbedPane().selectTab("Ticket Management");
+		String[][] contents = window.table("parkingTicketTable").contents();
+		assertThat(contents.length).isEqualTo(2);
+		assertThat(contents[0][0]).isEqualTo("t1");
+		assertThat(contents[0][1]).isEqualTo("AB123");
+		assertThat(contents[1][0]).isEqualTo("t2");
+		assertThat(contents[1][1]).isEqualTo("CD456");
+	}
+
+	@Test
+	@GUITest
+	public void testDeleteZoneButtonShouldDelegateToControllerDeleteParkingZone() {
+		ParkingZone zone1 = zone("1", "Parking A");
+		ParkingZone zone2 = zone("2", "Parking B");
+		GuiActionRunner.execute(() -> parkingSwingView.showAllParkingZones(Arrays.asList(zone1, zone2)));
+
+		window.table("parkingZoneTable").cell(org.assertj.swing.data.TableCell.row(1).column(5)).click();
+
+		verify(parkingController).deleteParkingZone(zone2);
+	}
+
+	@Test
+	@GUITest
+	public void testDeleteZoneButtonShouldShowErrorWhenZoneNotFoundInMap() {
+		ParkingZone zone = zone("1", "Parking A");
+		GuiActionRunner.execute(() -> parkingSwingView.showAllParkingZones(Arrays.asList(zone)));
+
+		GuiActionRunner.execute(() -> parkingSwingView.getParkingZoneByIdMap().remove("1"));
+
+		window.table("parkingZoneTable").cell(org.assertj.swing.data.TableCell.row(0).column(5)).click();
+
+		window.label("errorMessageLabel").requireText("No existing parking zone with id 1");
+	}
+
+	@Test
+	@GUITest
+	public void testDeleteTicketButtonShouldDelegateToControllerDeleteParkingTicket() {
+		ParkingTicket ticket1 = ticket("t1", "AB123", "z1");
+		ParkingTicket ticket2 = ticket("t2", "CD456", "z1");
+		GuiActionRunner.execute(() -> parkingSwingView.showAllParkingTickets(Arrays.asList(ticket1, ticket2)));
+
+		window.tabbedPane().selectTab("Ticket Management");
+		window.table("parkingTicketTable").cell(org.assertj.swing.data.TableCell.row(1).column(7)).click();
+
+		verify(parkingController).deleteParkingTicket(ticket2);
+	}
+
+	@Test
+	@GUITest
+	public void testDeleteTicketButtonShouldShowErrorWhenTicketNotFoundInMap() {
+		ParkingTicket ticket = ticket("t1", "AB123", "z1");
+		GuiActionRunner.execute(() -> parkingSwingView.showAllParkingTickets(Arrays.asList(ticket)));
+
+		GuiActionRunner.execute(() -> parkingSwingView.setParkingController(parkingController));
+		GuiActionRunner.execute(() -> parkingSwingView.getParkingTicketByIdMap().remove("t1"));
+
+		window.tabbedPane().selectTab("Ticket Management");
+		window.table("parkingTicketTable").cell(org.assertj.swing.data.TableCell.row(0).column(7)).click();
+
+		robot().waitForIdle();
+
+		window.label("errorMessageLabel").requireText("No existing parking ticket with id t1");
+	}
 }
