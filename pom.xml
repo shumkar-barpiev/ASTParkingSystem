@@ -17,6 +17,7 @@
     <mongo.driver.version>3.12.14</mongo.driver.version>
     <mongo.java.server.version>1.39.0</mongo.java.server.version>
     <testcontainers.version>1.21.4</testcontainers.version>
+    <picocli.version>4.7.7</picocli.version>
   </properties>
 
   <dependencies>
@@ -36,6 +37,11 @@
       <groupId>org.mongodb</groupId>
       <artifactId>mongo-java-driver</artifactId>
       <version>${mongo.driver.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>info.picocli</groupId>
+      <artifactId>picocli</artifactId>
+      <version>${picocli.version}</version>
     </dependency>
     <dependency>
       <!-- required to see Mongo Java Driver logs -->
@@ -76,6 +82,12 @@
         <plugin>
           <artifactId>maven-surefire-plugin</artifactId>
           <version>3.5.5</version>
+          <configuration>
+            <excludes>
+              <exclude>**/view/**/*Test.java</exclude>
+              <exclude>**/ParkingSwingViewTest.java</exclude>
+            </excludes>
+          </configuration>
         </plugin>
         <plugin>
           <artifactId>maven-surefire-report-plugin</artifactId>
@@ -91,15 +103,24 @@
 
         <configuration>
           <excludes>
-            <exclude>**/model/*.*</exclude>
-            <exclude>**/app/**</exclude>
+            <exclude>com/myexam/parking/model/**</exclude>
+            <exclude>com/myexam/parking/view/**</exclude>
+            <exclude>com/myexam/parking/App*</exclude>
           </excludes>
         </configuration>
 
         <executions>
           <execution>
+            <id>prepare-agent</id>
             <goals>
               <goal>prepare-agent</goal>
+            </goals>
+          </execution>
+
+          <execution>
+            <id>report</id>
+            <phase>test</phase>
+            <goals>
               <goal>report</goal>
             </goals>
           </execution>
