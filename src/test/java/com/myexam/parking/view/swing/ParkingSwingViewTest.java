@@ -59,4 +59,20 @@ public class ParkingSwingViewTest extends AssertJSwingJUnitTestCase {
 	private ParkingTicket ticket(String id, String plate, String zoneId) {
 		return new ParkingTicket(id, plate, zoneId, LocalDateTime.of(2026, 6, 26, 9, 0),
 				LocalDateTime.of(2026, 6, 26, 11, 0), false, 5.0);
-	}}
+	}
+
+	@Test
+	@GUITest
+	public void testControlsInitialStates() {
+		window.label(JLabelMatcher.withText("Name"));
+		window.textBox("nameTextField").requireEnabled();
+		window.label(JLabelMatcher.withText("Capacity"));
+		window.textBox("capacityTextField").requireEnabled();
+		window.label(JLabelMatcher.withText("Rate"));
+		window.textBox("rateTextField").requireEnabled();
+		window.checkBox("isAvailableCheckBox").requireEnabled();
+		window.button("parkingZoneSaveButton").requireEnabled();
+
+		window.label("errorMessageLabel").requireText(" ");
+	}
+}
