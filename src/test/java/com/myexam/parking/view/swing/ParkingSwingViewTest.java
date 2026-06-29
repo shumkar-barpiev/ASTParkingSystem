@@ -72,6 +72,18 @@ public class ParkingSwingViewTest extends AssertJSwingJUnitTestCase {
 		window.textBox("rateTextField").requireEnabled();
 		window.checkBox("isAvailableCheckBox").requireEnabled();
 		window.button("parkingZoneSaveButton").requireEnabled();
+		window.table("parkingZoneTable").requireVisible();
+
+		window.tabbedPane().selectTab("Ticket Management");
+		window.label(JLabelMatcher.withText("Vehicle Plate"));
+		window.textBox("vehiclePlateTextField").requireEnabled();
+		window.label(JLabelMatcher.withText("Zone"));
+		window.comboBox("parkingZoneComboBox").requireEnabled();
+		window.textBox("entryTimeTextField").requireEnabled();
+		window.textBox("exitTimeTextField").requireEnabled();
+		window.checkBox("isPaidCheckBox").requireEnabled();
+		window.button("ticketSaveButton").requireEnabled();
+		window.table("parkingTicketTable").requireVisible();
 
 		window.label("errorMessageLabel").requireText(" ");
 	}
