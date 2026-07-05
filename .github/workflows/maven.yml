@@ -19,16 +19,22 @@ jobs:
       with:
         java-version: '8' 
         distribution: 'temurin'
-        cache: maven
+        cache: maven 
 
     - name: Install xvfb
       run: sudo apt-get install -y xvfb
 
-    - name: Build, Test, and Analyze
-      run: >
-        xvfb-run mvn clean verify 
-        jacoco:report 
-        org.pitest:pitest-maven:mutationCoverage
+    - name: Run Unit Tests
+      run: xvfb-run mvn clean test
+
+    - name: Run Integration Tests
+      run: xvfb-run mvn verify 
+
+    - name: Generate JaCoCo Coverage Report
+      run: mvn jacoco:report
+
+    - name: Run PIT Mutation Testing
+      run: xvfb-run mvn org.pitest:pitest-maven:mutationCoverage
 
     - name: Archive PIT Mutation Report
       uses: actions/upload-artifact@v4
