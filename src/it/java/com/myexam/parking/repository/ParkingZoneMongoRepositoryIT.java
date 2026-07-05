@@ -21,7 +21,6 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 
 public class ParkingZoneMongoRepositoryIT {
-
 	@ClassRule
 	public static final MongoDBContainer mongo = new MongoDBContainer("mongo:5");
 

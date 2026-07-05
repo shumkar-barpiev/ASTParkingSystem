@@ -1,6 +1,7 @@
 package com.myexam.parking.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -90,6 +91,52 @@ public class ParkingTicketMongoRepositoryIT {
 		parkingTicketRepository.delete("1");
 
 		assertThat(readAllTicketsFromDatabase()).isEmpty();
+	}
+
+	@Test
+	public void testCountActiveTicketsByZoneId() {
+		LocalDateTime now = LocalDateTime.now();
+		addTestTicketToDatabase("1", "ABC123", "parkingZoneId-1", now, null, false, 0.0);
+		addTestTicketToDatabase("2", "EFG456", "parkingZoneId-1", now, now.plusHours(1), true, 2.5);
+		addTestTicketToDatabase("3", "QWERTY1", "parkingZoneId-2", now, null, false, 0.0);
+
+		assertThat(parkingTicketRepository.countActiveTicketsByZoneId("parkingZoneId-1")).isEqualTo(1);
+	}
+
+	@Test
+	public void testFindActiveTicketByVehiclePlateFound() {
+		LocalDateTime now = LocalDateTime.now();
+		addTestTicketToDatabase("1", "ABC123", "parkingZoneId-1", now.minusDays(1), now.minusDays(1).plusHours(2), true,
+				5.0);
+		addTestTicketToDatabase("2", "ABC123", "parkingZoneId-2", now, null, false, 0.0);
+
+		ParkingTicket activeTicket = parkingTicketRepository.findActiveTicketByVehiclePlate("ABC123");
+
+		assertThat(activeTicket).isNotNull();
+		assertThat(activeTicket.getId()).isEqualTo("2");
+	}
+
+	@Test
+	public void testFindActiveTicketByVehiclePlateNotFound() {
+		addTestTicketToDatabase("1", "ABC123", "parkingZoneId-1", LocalDateTime.now(), LocalDateTime.now(), true, 5.0);
+
+		assertThat(parkingTicketRepository.findActiveTicketByVehiclePlate("ABC123")).isNull();
+	}
+
+	@Test
+	public void testSaveThrowsExceptionForNullId() {
+		ParkingTicket invalidTicket = new ParkingTicket(null, "ABC123", "parkingZoneId-1", LocalDateTime.now(), null,
+				false, 0.0);
+		assertThatThrownBy(() -> parkingTicketRepository.save(invalidTicket))
+				.isInstanceOf(IllegalArgumentException.class).hasMessage("ID cannot be null or blank");
+	}
+
+	@Test
+	public void testSaveThrowsExceptionForNegativeCost() {
+		ParkingTicket invalidTicket = new ParkingTicket("1", "ABC123", "parkingZoneId-1", LocalDateTime.now(), null,
+				false, -5.0);
+		assertThatThrownBy(() -> parkingTicketRepository.save(invalidTicket))
+				.isInstanceOf(IllegalArgumentException.class).hasMessage("Total cost cannot be negative");
 	}
 
 	private void addTestTicketToDatabase(String id, String vehiclePlate, String parkingZoneId, LocalDateTime entryTime,
