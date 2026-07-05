@@ -3,6 +3,8 @@ package com.myexam.parking.controller;
 import static java.util.Arrays.asList;
 import static org.mockito.Mockito.verify;
 
+import java.time.LocalDateTime;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -13,6 +15,7 @@ import org.testcontainers.containers.MongoDBContainer;
 
 import com.mongodb.MongoClient;
 import com.mongodb.ServerAddress;
+import com.myexam.parking.model.ParkingTicket;
 import com.myexam.parking.model.ParkingZone;
 import com.myexam.parking.repository.ParkingTicketRepository;
 import com.myexam.parking.repository.ParkingZoneRepository;
@@ -108,4 +111,83 @@ public class ParkingControllerIT {
 		verify(parkingView).showError("No existing parking zone with id 1", zone);
 	}
 
+	@Test
+	public void testAllParkingTickets() {
+		ParkingTicket ticket = new ParkingTicket("1", "ABC123", "zoneId-1", LocalDateTime.now(), null, false, 0.0);
+		ticketRepository.save(ticket);
+
+		parkingController.allParkingTickets();
+
+		verify(parkingView).showAllParkingTickets(asList(ticket));
+	}
+
+	@Test
+	public void testNewParkingTicket() {
+		ParkingTicket ticket = new ParkingTicket("1", "ABC123", "zoneId-1", LocalDateTime.now(), null, false, 0.0);
+
+		parkingController.newParkingTicket(ticket);
+
+		verify(parkingView).parkingTicketAdded(ticket);
+	}
+
+	@Test
+	public void testNewParkingTicketAlreadyExisting() {
+		ParkingTicket existingTicket = new ParkingTicket("1", "ABC123", "zoneId-1", LocalDateTime.now(), null, false,
+				0.0);
+		ticketRepository.save(existingTicket);
+
+		ParkingTicket newTicket = new ParkingTicket("1", "EFG456", "zoneId-2", LocalDateTime.now(), null, false, 0.0);
+
+		parkingController.newParkingTicket(newTicket);
+
+		verify(parkingView).showError("Already existing parking ticket with id 1", existingTicket);
+	}
+
+	@Test
+	public void testNewParkingTicketActiveTicketExists() {
+		ParkingTicket activeTicket = new ParkingTicket("1", "ABC123", "zoneId-1", LocalDateTime.now(), null, false,
+				0.0);
+		ticketRepository.save(activeTicket);
+
+		ParkingTicket newTicket = new ParkingTicket("2", "ABC123", "zoneId-2", LocalDateTime.now(), null, false, 0.0);
+
+		parkingController.newParkingTicket(newTicket);
+
+		verify(parkingView).showError("Vehicle ABC123 already has an active ticket", newTicket);
+	}
+
+	@Test
+	public void testNewParkingTicketZoneFull() {
+		ParkingZone zone = new ParkingZone("zoneId-1", "ParkingZone A", 1, 2.5, true);
+		zoneRepository.save(zone);
+
+		ParkingTicket activeTicket = new ParkingTicket("1", "ABC123", "zoneId-1", LocalDateTime.now(), null, false,
+				0.0);
+		ticketRepository.save(activeTicket);
+
+		ParkingTicket newTicket = new ParkingTicket("2", "EFG456", "zoneId-1", LocalDateTime.now(), null, false, 0.0);
+
+		parkingController.newParkingTicket(newTicket);
+
+		verify(parkingView).showError("Parking zone ParkingZone A is full", newTicket);
+	}
+
+	@Test
+	public void testDeleteParkingTicket() {
+		ParkingTicket ticket = new ParkingTicket("1", "ABC123", "zoneId-1", LocalDateTime.now(), null, false, 0.0);
+		ticketRepository.save(ticket);
+
+		parkingController.deleteParkingTicket(ticket);
+
+		verify(parkingView).parkingTicketRemoved(ticket);
+	}
+
+	@Test
+	public void testDeleteParkingTicketNotFound() {
+		ParkingTicket ticket = new ParkingTicket("1", "ABC123", "zoneId-1", LocalDateTime.now(), null, false, 0.0);
+
+		parkingController.deleteParkingTicket(ticket);
+
+		verify(parkingView).showError("No existing parking ticket with id 1", ticket);
+	}
 }
