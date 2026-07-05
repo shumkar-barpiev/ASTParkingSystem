@@ -73,7 +73,6 @@
       <version>${testcontainers.version}</version>
       <scope>test</scope>
     </dependency>
-
   </dependencies>
 
   <build>
@@ -82,12 +81,6 @@
         <plugin>
           <artifactId>maven-surefire-plugin</artifactId>
           <version>3.5.5</version>
-          <configuration>
-            <excludes>
-              <exclude>**/view/**/*Test.java</exclude>
-              <exclude>**/ParkingSwingViewTest.java</exclude>
-            </excludes>
-          </configuration>
         </plugin>
         <plugin>
           <artifactId>maven-surefire-report-plugin</artifactId>
@@ -96,6 +89,95 @@
       </plugins>
     </pluginManagement>
     <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>3.6.1</version>
+        <executions>
+          <execution>
+            <id>add-test-source</id>
+            <phase>generate-test-sources</phase>
+            <goals>
+              <goal>add-test-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+                <source>src/it/java</source>
+              </sources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>io.fabric8</groupId>
+        <artifactId>docker-maven-plugin</artifactId>
+        <version>0.48.1</version>
+        <configuration>
+          <images>
+            <image>
+              <name>mongo:5</name>
+              <run>
+                <ports>
+                  <port>mongo.mapped.port:27017</port>
+                </ports>
+                <wait>
+                  <tcp>
+                    <ports>
+                      <port>27017</port>
+                    </ports>
+                    <mode>mapped</mode>
+                  </tcp>
+                  <time>30000</time>
+                </wait>
+              </run>
+            </image>
+          </images>
+        </configuration>
+        <executions>
+          <execution>
+            <id>docker-start</id>
+            <phase>pre-integration-test</phase>
+            <goals>
+              <goal>start</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>docker-stop</id>
+            <phase>post-integration-test</phase>
+            <goals>
+              <goal>stop</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>3.6.0</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <configuration>
+              <descriptorRefs>
+                <descriptorRef>jar-with-dependencies</descriptorRef>
+              </descriptorRefs>
+              <archive>
+                <manifest>
+                  <mainClass>
+                    com.myexam.parking.app.swing.ParkingSwingApp
+                  </mainClass>
+                </manifest>
+              </archive>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
       <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
@@ -145,8 +227,8 @@
           </excludedMethods>
         </configuration>
       </plugin>
+
     </plugins>
   </build>
-
 
 </project>
