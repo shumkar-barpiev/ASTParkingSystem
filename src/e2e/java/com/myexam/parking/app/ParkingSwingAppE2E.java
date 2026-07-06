@@ -108,7 +108,7 @@ public class ParkingSwingAppE2E extends AssertJSwingJUnitTestCase {
 	@Test
 	@GUITest
 	public void testAddParkingZoneButtonError() {
-		window.textBox("nameTextField").enterText("Another Zone");
+		window.textBox("nameTextField").enterText("Parking Zone");
 		window.textBox("rateTextField").enterText("1.0");
 		window.button("parkingZoneSaveButton").click();
 
@@ -132,6 +132,56 @@ public class ParkingSwingAppE2E extends AssertJSwingJUnitTestCase {
 		window.table("parkingZoneTable").cell(TableCell.row(0).column(5)).click();
 
 		window.label("errorMessageLabel").requireText("No existing parking zone with id " + PARKING_ZONE_FIXTURE_1_ID);
+	}
+
+	@Test
+	@GUITest
+	public void testAddTicketButtonSuccess() {
+		window.tabbedPane().selectTab("Ticket Management");
+		window.textBox("vehiclePlateTextField").enterText("XYZ123");
+		window.comboBox("parkingZoneComboBox").selectItem(PARKING_ZONE_FIXTURE_2_ID);
+		window.textBox("entryTimeTextField").enterText("2026-06-26 09:00");
+		window.textBox("exitTimeTextField").enterText("2026-06-26 11:00");
+		window.button("ticketSaveButton").click();
+
+		assertThat(Arrays.asList(window.table("parkingTicketTable").contents()))
+				.anySatisfy(row -> assertThat(row).contains("XYZ123"));
+	}
+
+	@Test
+	@GUITest
+	public void testAddTicketButtonError() {
+		window.tabbedPane().selectTab("Ticket Management");
+		window.textBox("vehiclePlateTextField").enterText(PARKING_TICKET_FIXTURE_1_PLATE);
+		window.comboBox("parkingZoneComboBox").selectItem(PARKING_ZONE_FIXTURE_2_ID);
+		window.textBox("entryTimeTextField").enterText("2026-06-26 09:00");
+		window.textBox("exitTimeTextField").enterText("2026-06-26 11:00");
+		window.button("ticketSaveButton").click();
+
+		window.label("errorMessageLabel")
+				.requireText("Vehicle " + PARKING_TICKET_FIXTURE_1_PLATE + " already has an active ticket");
+	}
+
+	@Test
+	@GUITest
+	public void testDeleteTicketButtonSuccess() {
+		window.tabbedPane().selectTab("Ticket Management");
+		window.table("parkingTicketTable").cell(TableCell.row(0).column(7)).click();
+
+		assertThat(Arrays.asList(window.table("parkingTicketTable").contents()))
+				.noneMatch(row -> row[1].equals(PARKING_TICKET_FIXTURE_1_PLATE));
+	}
+
+	@Test
+	@GUITest
+	public void testDeleteTicketButtonError() {
+		removeTestTicketFromDatabase(PARKING_TICKET_FIXTURE_1_ID);
+
+		window.tabbedPane().selectTab("Ticket Management");
+		window.table("parkingTicketTable").cell(TableCell.row(0).column(7)).click();
+
+		window.label("errorMessageLabel")
+				.requireText("No existing parking ticket with id " + PARKING_TICKET_FIXTURE_1_ID);
 	}
 
 	private void addTestZoneToDatabase(String id, String name, int capacity, double hourlyRate, boolean isAvailable) {
