@@ -44,7 +44,6 @@
       <version>${picocli.version}</version>
     </dependency>
     <dependency>
-      <!-- required to see Mongo Java Driver logs -->
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
       <version>1.2.13</version>
@@ -103,6 +102,7 @@
             <configuration>
               <sources>
                 <source>src/it/java</source>
+                <source>src/e2e/java</source>
               </sources>
             </configuration>
           </execution>
@@ -124,6 +124,25 @@
               <goal>verify</goal>
             </goals>
           </execution>
+          <execution>
+            <id>e2e-tests</id>
+            <goals>
+              <goal>integration-test</goal>
+              <goal>verify</goal>
+            </goals>
+            <configuration>
+              <excludes>
+                <exclude>**/*IT.java</exclude>
+              </excludes>
+              <includes>
+                <include>**/*E2E.java</include>
+              </includes>
+              <systemPropertyVariables>
+                <mongo.port>${mongo.mapped.port}</mongo.port>
+              </systemPropertyVariables>
+            </configuration>
+          </execution>
+
         </executions>
       </plugin>
       <plugin>
@@ -138,15 +157,6 @@
                 <ports>
                   <port>mongo.mapped.port:27017</port>
                 </ports>
-                <wait>
-                  <tcp>
-                    <ports>
-                      <port>27017</port>
-                    </ports>
-                    <mode>mapped</mode>
-                  </tcp>
-                  <time>30000</time>
-                </wait>
               </run>
             </image>
           </images>
@@ -247,5 +257,34 @@
 
     </plugins>
   </build>
+
+  <profiles>
+    <profile>
+      <id>skip-testcontainers</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-failsafe-plugin</artifactId>
+            <configuration>
+              <excludes>
+                <exclude>**/*Testcontainers*.java</exclude>
+              </excludes>
+            </configuration>
+            <executions>
+              <execution>
+                <id>e2e-tests</id>
+                <configuration>
+                  <excludes>
+                    <exclude>**/*E2E.java</exclude>
+                  </excludes>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 
 </project>
