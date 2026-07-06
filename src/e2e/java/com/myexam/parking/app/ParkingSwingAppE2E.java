@@ -1,18 +1,23 @@
 package com.myexam.parking.app;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.swing.launcher.ApplicationLauncher.application;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 
 import javax.swing.JFrame;
 
+import org.assertj.swing.annotation.GUITest;
 import org.assertj.swing.core.GenericTypeMatcher;
+import org.assertj.swing.data.TableCell;
 import org.assertj.swing.finder.WindowFinder;
 import org.assertj.swing.fixture.FrameFixture;
 import org.assertj.swing.junit.runner.GUITestRunner;
 import org.assertj.swing.junit.testcase.AssertJSwingJUnitTestCase;
 import org.bson.Document;
 import org.junit.ClassRule;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.testcontainers.containers.MongoDBContainer;
 
@@ -54,7 +59,7 @@ public class ParkingSwingAppE2E extends AssertJSwingJUnitTestCase {
 		addTestTicketToDatabase(PARKING_TICKET_FIXTURE_1_ID, PARKING_TICKET_FIXTURE_1_PLATE, PARKING_ZONE_FIXTURE_1_ID,
 				LocalDateTime.of(2026, 6, 26, 9, 0), null, false, 0.0);
 
-		application("com.myexam.parking.app.swing.ParkingSwingApp")
+		application("com.myexam.parking.app.ParkingSwingApp")
 				.withArgs("--mongo-host=" + containerIpAddress, "--mongo-port=" + mappedPort.toString(),
 						"--db-name=" + DB_NAME, "--db-collection-zones=" + PARKING_ZONE_COLLECTION_NAME,
 						"--db-collection-tickets=" + PARKING_TICKET_COLLECTION_NAME)
@@ -71,6 +76,62 @@ public class ParkingSwingAppE2E extends AssertJSwingJUnitTestCase {
 	@Override
 	protected void onTearDown() {
 		mongoClient.close();
+	}
+
+	@Test
+	@GUITest
+	public void testOnStartAllDatabaseElementsAreShown() {
+		String[][] zoneRows = window.table("parkingZoneTable").contents();
+		assertThat(Arrays.asList(zoneRows))
+				.anySatisfy(row -> assertThat(row).contains(PARKING_ZONE_FIXTURE_1_ID, PARKING_ZONE_FIXTURE_1_NAME))
+				.anySatisfy(row -> assertThat(row).contains(PARKING_ZONE_FIXTURE_2_ID, PARKING_ZONE_FIXTURE_2_NAME));
+
+		window.tabbedPane().selectTab("Ticket Management");
+		String[][] ticketRows = window.table("parkingTicketTable").contents();
+		assertThat(Arrays.asList(ticketRows)).anySatisfy(
+				row -> assertThat(row).contains(PARKING_TICKET_FIXTURE_1_ID, PARKING_TICKET_FIXTURE_1_PLATE));
+	}
+
+	@Test
+	@GUITest
+	public void testAddParkingZoneButtonSuccess() {
+		window.textBox("nameTextField").enterText("Parking C");
+		window.textBox("capacityTextField").enterText("20");
+		window.textBox("rateTextField").enterText("4.0");
+		window.checkBox("isAvailableCheckBox").check();
+		window.button("parkingZoneSaveButton").click();
+
+		assertThat(Arrays.asList(window.table("parkingZoneTable").contents()))
+				.anySatisfy(row -> assertThat(row).contains("Parking C"));
+	}
+
+	@Test
+	@GUITest
+	public void testAddParkingZoneButtonError() {
+		window.textBox("nameTextField").enterText("Another Zone");
+		window.textBox("rateTextField").enterText("1.0");
+		window.button("parkingZoneSaveButton").click();
+
+		window.label("errorMessageLabel").requireText("Capacity and Rate must be valid numbers.");
+	}
+
+	@Test
+	@GUITest
+	public void testDeleteParkingZoneButtonSuccess() {
+		window.table("parkingZoneTable").cell(TableCell.row(0).column(5)).click();
+
+		assertThat(Arrays.asList(window.table("parkingZoneTable").contents()))
+				.noneMatch(row -> row[1].equals(PARKING_ZONE_FIXTURE_1_NAME));
+	}
+
+	@Test
+	@GUITest
+	public void testDeleteParkingZoneButtonError() {
+		removeTestZoneFromDatabase(PARKING_ZONE_FIXTURE_1_ID);
+
+		window.table("parkingZoneTable").cell(TableCell.row(0).column(5)).click();
+
+		window.label("errorMessageLabel").requireText("No existing parking zone with id " + PARKING_ZONE_FIXTURE_1_ID);
 	}
 
 	private void addTestZoneToDatabase(String id, String name, int capacity, double hourlyRate, boolean isAvailable) {
