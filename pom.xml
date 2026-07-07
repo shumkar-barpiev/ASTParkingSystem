@@ -18,6 +18,34 @@
     <mongo.java.server.version>1.39.0</mongo.java.server.version>
     <testcontainers.version>1.21.4</testcontainers.version>
     <picocli.version>4.7.7</picocli.version>
+
+
+    <sonar.tests>
+      ${project.basedir}/src/test/java,
+      ${project.basedir}/src/it/java,
+      ${project.basedir}/src/e2e/java
+    </sonar.tests>
+
+    <sonar.junit.reportPaths>
+      ${project.build.directory}/surefire-reports,
+      ${project.build.directory}/failsafe-reports
+    </sonar.junit.reportPaths>
+
+    <sonar.coverage.exclusions>
+      **/model/**,
+      **/app/**
+    </sonar.coverage.exclusions>
+
+    <sonar.issue.ignore.multicriteria>e11,e12</sonar.issue.ignore.multicriteria>
+
+    <sonar.issue.ignore.multicriteria.e11.ruleKey>java:S117</sonar.issue.ignore.multicriteria.e11.ruleKey>
+    <sonar.issue.ignore.multicriteria.e11.resourceKey>**/ParkingSwingView.java</sonar.issue.ignore.multicriteria.e11.resourceKey>
+
+    <sonar.issue.ignore.multicriteria.e12.ruleKey>java:S2699</sonar.issue.ignore.multicriteria.e12.ruleKey>
+    <sonar.issue.ignore.multicriteria.e12.resourceKey>**/*Test.java</sonar.issue.ignore.multicriteria.e12.resourceKey>
+    <sonar.coverage.jacoco.xmlReportPaths>
+      ${project.build.directory}/site/jacoco/jacoco.xml
+    </sonar.coverage.jacoco.xmlReportPaths>
   </properties>
 
   <dependencies>
@@ -74,6 +102,7 @@
     </dependency>
   </dependencies>
 
+
   <build>
     <pluginManagement>
       <plugins>
@@ -87,6 +116,7 @@
         </plugin>
       </plugins>
     </pluginManagement>
+
     <plugins>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
@@ -108,6 +138,7 @@
           </execution>
         </executions>
       </plugin>
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
@@ -119,6 +150,7 @@
         </configuration>
         <executions>
           <execution>
+            <id>default-it</id>
             <goals>
               <goal>integration-test</goal>
               <goal>verify</goal>
@@ -141,40 +173,6 @@
                 <mongo.port>${mongo.mapped.port}</mongo.port>
               </systemPropertyVariables>
             </configuration>
-          </execution>
-
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>io.fabric8</groupId>
-        <artifactId>docker-maven-plugin</artifactId>
-        <version>0.48.1</version>
-        <configuration>
-          <images>
-            <image>
-              <name>mongo:5</name>
-              <run>
-                <ports>
-                  <port>mongo.mapped.port:27017</port>
-                </ports>
-              </run>
-            </image>
-          </images>
-        </configuration>
-        <executions>
-          <execution>
-            <id>docker-start</id>
-            <phase>pre-integration-test</phase>
-            <goals>
-              <goal>start</goal>
-            </goals>
-          </execution>
-          <execution>
-            <id>docker-stop</id>
-            <phase>post-integration-test</phase>
-            <goals>
-              <goal>stop</goal>
-            </goals>
           </execution>
         </executions>
       </plugin>
@@ -206,36 +204,6 @@
       </plugin>
 
       <plugin>
-        <groupId>org.jacoco</groupId>
-        <artifactId>jacoco-maven-plugin</artifactId>
-        <version>0.8.11</version>
-
-        <configuration>
-          <excludes>
-            <exclude>com/myexam/parking/model/**</exclude>
-            <exclude>com/myexam/parking/view/**</exclude>
-            <exclude>com/myexam/parking/App*</exclude>
-          </excludes>
-        </configuration>
-
-        <executions>
-          <execution>
-            <id>prepare-agent</id>
-            <goals>
-              <goal>prepare-agent</goal>
-            </goals>
-          </execution>
-
-          <execution>
-            <id>report</id>
-            <phase>test</phase>
-            <goals>
-              <goal>report</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
         <groupId>org.pitest</groupId>
         <artifactId>pitest-maven</artifactId>
         <version>1.15.2</version>
@@ -248,13 +216,11 @@
             <param>com.myexam.parking.controller.*</param>
             <param>com.myexam.parking.repository.*</param>
           </targetTests>
-
           <excludedMethods>
             <param>main</param>
           </excludedMethods>
         </configuration>
       </plugin>
-
     </plugins>
   </build>
 
@@ -285,6 +251,44 @@
         </plugins>
       </build>
     </profile>
-  </profiles>
+    <profile>
+      <id>jacoco</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+            <version>0.8.14</version>
+            <configuration>
+              <excludes>
+                <exclude>com/myexam/parking/model/**</exclude>
+                <exclude>com/myexam/parking/app/**</exclude>
+              </excludes>
+            </configuration>
+            <executions>
+              <execution>
+                <id>prepare-agent</id>
+                <goals>
+                  <goal>prepare-agent</goal>
+                </goals>
+              </execution>
 
+              <execution>
+                <id>report</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>report</goal>
+                </goals>
+                <configuration>
+                  <formats>
+                    <format>XML</format>
+                  </formats>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>
