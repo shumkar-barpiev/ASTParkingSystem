@@ -27,7 +27,7 @@ A desktop application built for managing parking zones and tracking active vehic
 ### 1. Clone the Repository
 To clone the repository:
 
-```
+```bash
 git clone https://github.com/shumkar-barpiev/ASTParkingSystem.git
 ```
 ### Run Tests
