@@ -129,7 +129,7 @@ public class ParkingSwingViewTest extends AssertJSwingJUnitTestCase {
 		GuiActionRunner.execute(() -> parkingSwingView.showAllParkingZones(Arrays.asList(zone1)));
 		GuiActionRunner.execute(() -> parkingSwingView.showAllParkingZones(Arrays.asList(zone1)));
 
-		assertThat(window.table("parkingZoneTable").contents().length).isEqualTo(1);
+		assertThat(window.table("parkingZoneTable").contents().length).isEqualTo(1); // NOSONAR
 	}
 
 	@Test
@@ -308,7 +308,7 @@ public class ParkingSwingViewTest extends AssertJSwingJUnitTestCase {
 		GuiActionRunner.execute(() -> parkingSwingView.showAllParkingTickets(Arrays.asList(ticket)));
 
 		window.tabbedPane().selectTab("Ticket Management");
-		assertThat(window.table("parkingTicketTable").contents().length).isEqualTo(1);
+		assertThat(window.table("parkingTicketTable").contents().length).isEqualTo(1); // NOSONAR
 	}
 
 	@Test
@@ -470,8 +470,8 @@ public class ParkingSwingViewTest extends AssertJSwingJUnitTestCase {
 		ParkingTicket captured = captor.getValue();
 		assertThat(captured.getVehiclePlate()).isEqualTo("AB123");
 		assertThat(captured.getParkingZoneId()).isEqualTo("z1");
-		assertThat(captured.getEntryTime()).isEqualTo(LocalDateTime.of(2026, 6, 26, 9, 0));
-		assertThat(captured.getExitTime()).isEqualTo(LocalDateTime.of(2026, 6, 26, 11, 0));
+		assertThat(captured.getEntryTime()).isEqualTo(LocalDateTime.of(2026, Month.JUNE, 26, 9, 0));
+		assertThat(captured.getExitTime()).isEqualTo(LocalDateTime.of(2026, Month.JUNE, 26, 11, 0));
 		assertThat(captured.isPaid()).isTrue();
 		assertThat(captured.getTotalCost()).isEqualTo(0.0);
 		assertThat(captured.getId()).isNotNull();
@@ -549,7 +549,7 @@ public class ParkingSwingViewTest extends AssertJSwingJUnitTestCase {
 		window.textBox("entryTimeTextField").requireText("");
 		window.textBox("exitTimeTextField").requireText("");
 		window.checkBox("isPaidCheckBox").requireNotSelected();
-		assertThat(window.comboBox("parkingZoneComboBox").contents().length).isZero();
+		assertThat(window.comboBox("parkingZoneComboBox").contents().length).isZero(); // NOSONAR
 	}
 
 	@Test
@@ -563,7 +563,7 @@ public class ParkingSwingViewTest extends AssertJSwingJUnitTestCase {
 		GuiActionRunner.execute(() -> parkingSwingView.parkingTicketRemoved(ticket2));
 
 		window.tabbedPane().selectTab("Ticket Management");
-		assertThat(window.table("parkingTicketTable").contents().length).isEqualTo(1);
+		assertThat(window.table("parkingTicketTable").contents().length).isEqualTo(1); // NOSONAR
 		window.label("errorMessageLabel").requireText(" ");
 	}
 
@@ -592,7 +592,7 @@ public class ParkingSwingViewTest extends AssertJSwingJUnitTestCase {
 
 		GuiActionRunner.execute(() -> parkingSwingView.parkingZoneRemoved(zone2));
 
-		assertThat(window.table("parkingZoneTable").contents().length).isEqualTo(1);
+		assertThat(window.table("parkingZoneTable").contents().length).isEqualTo(1); // NOSONAR
 		window.label("errorMessageLabel").requireText(" ");
 	}
 

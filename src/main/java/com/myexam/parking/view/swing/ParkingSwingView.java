@@ -61,7 +61,7 @@ public class ParkingSwingView extends JFrame implements ParkingView {
 		setContentPane(mainPanel);
 		mainPanel.setLayout(new BorderLayout(0, 0));
 
-		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+		JTabbedPane tabbedPane = new JTabbedPane(javax.swing.SwingConstants.TOP);
 		tabbedPane.setForeground(new Color(0, 0, 0));
 		mainPanel.add(tabbedPane, BorderLayout.CENTER);
 
