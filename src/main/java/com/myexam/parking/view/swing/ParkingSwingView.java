@@ -124,9 +124,7 @@ public class ParkingSwingView extends JFrame implements ParkingView {
 
 				ParkingZone newZone = new ParkingZone(id, name, capacity, rate, isAvailable);
 
-				if (parkingController != null) {
-					parkingController.newParkingZone(newZone);
-				}
+				parkingController.newParkingZone(newZone);
 			} catch (NumberFormatException ex) {
 				showError("Capacity and Rate must be valid numbers.", new ParkingZone());
 			}
@@ -254,9 +252,8 @@ public class ParkingSwingView extends JFrame implements ParkingView {
 
 				ParkingTicket newTicket = new ParkingTicket(id, vehiclePlate, zoneId, entryTime, exitTime, paid, 0.0);
 
-				if (parkingController != null) {
-					parkingController.newParkingTicket(newTicket);
-				}
+				parkingController.newParkingTicket(newTicket);
+
 			} catch (java.time.format.DateTimeParseException ex) {
 				showError("Entry/Exit Time must be in format: 2026-06-26 09:00", new ParkingTicket());
 			}
@@ -469,7 +466,7 @@ public class ParkingSwingView extends JFrame implements ParkingView {
 	}
 
 	private void deleteRowById(String id, boolean isTicketTable) {
-		if (parkingController == null || id == null) {
+		if (parkingController == null) {
 			return;
 		}
 
