@@ -4,6 +4,7 @@ import static org.mockito.Mockito.*;
 import static java.util.Arrays.asList;
 
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.List;
 
 import org.junit.After;
@@ -122,7 +123,7 @@ public class ParkingControllerTest {
 
 	@Test
 	public void testAllParkingTickets() {
-		LocalDateTime entry = LocalDateTime.of(2026, 6, 20, 10, 0);
+		LocalDateTime entry = LocalDateTime.of(2026, Month.JUNE, 26, 10, 0);
 		List<ParkingTicket> tickets = asList(new ParkingTicket("1", "ABC1234", "ParkingA", entry, null, false, 0.0));
 
 		when(parkingTicketRepository.findAll()).thenReturn(tickets);
@@ -134,7 +135,7 @@ public class ParkingControllerTest {
 
 	@Test
 	public void testNewParkingTicketWhenTicketDoesNotAlreadyExist() {
-		LocalDateTime entry = LocalDateTime.of(2026, 6, 20, 10, 0);
+		LocalDateTime entry = LocalDateTime.of(2026, Month.JUNE, 26, 10, 0);
 		ParkingTicket ticket = new ParkingTicket("1", "ABC1234", "ParkingA", entry, null, false, 0.0);
 
 		when(parkingTicketRepository.findById("1")).thenReturn(null);
@@ -148,7 +149,7 @@ public class ParkingControllerTest {
 
 	@Test
 	public void testNewParkingTicketWhenTicketAlreadyExists() {
-		LocalDateTime entry = LocalDateTime.of(2026, 6, 20, 10, 0);
+		LocalDateTime entry = LocalDateTime.of(2026, Month.JUNE, 26, 10, 0);
 		ParkingTicket ticketToAdd = new ParkingTicket("1", "ABC1234", "ParkingA", entry, null, false, 0.0);
 		ParkingTicket existingTicket = new ParkingTicket("1", "QWE123", "ParkingB", entry, null, false, 0.0);
 
@@ -162,7 +163,7 @@ public class ParkingControllerTest {
 
 	@Test
 	public void testDeleteParkingTicketWhenTicketExists() {
-		LocalDateTime entry = LocalDateTime.of(2026, 6, 20, 10, 0);
+		LocalDateTime entry = LocalDateTime.of(2026, Month.JUNE, 26, 10, 0);
 		ParkingTicket ticketToDelete = new ParkingTicket("1", "ABC1234", "ParkingA", entry, null, false, 0.0);
 
 		when(parkingTicketRepository.findById("1")).thenReturn(ticketToDelete);
@@ -176,7 +177,7 @@ public class ParkingControllerTest {
 
 	@Test
 	public void testDeleteParkingTicketWhenTicketDoesNotExist() {
-		LocalDateTime entry = LocalDateTime.of(2026, 6, 20, 10, 0);
+		LocalDateTime entry = LocalDateTime.of(2026, Month.JUNE, 26, 10, 0);
 		ParkingTicket ticket = new ParkingTicket("1", "ABC1234", "ParkingA", entry, null, false, 0.0);
 
 		when(parkingTicketRepository.findById("1")).thenReturn(null);
@@ -190,7 +191,7 @@ public class ParkingControllerTest {
 	@Test
 	public void testNewParkingTicketShouldSaveAndNotifyViewWhenAllChecksPass() {
 		ParkingZone zone = new ParkingZone("z1", "ParkingA", 2, 2.5, true);
-		ParkingTicket ticket = new ParkingTicket("t1", "ABC123", "z1", LocalDateTime.of(2026, 6, 26, 9, 0), null, false,
+		ParkingTicket ticket = new ParkingTicket("t1", "ABC123", "z1", LocalDateTime.of(2026, Month.JUNE, 26, 9, 0), null, false,
 				0.0);
 
 		when(parkingTicketRepository.findById("t1")).thenReturn(null);
@@ -205,11 +206,11 @@ public class ParkingControllerTest {
 
 	@Test
 	public void testNewParkingTicketShouldNotCheckZoneCapacityWhenPlateAlreadyActive() {
-		ParkingTicket ticket = new ParkingTicket("t1", "ABC123", "z1", LocalDateTime.of(2026, 6, 26, 11, 0), null,
+		ParkingTicket ticket = new ParkingTicket("t1", "ABC123", "z1", LocalDateTime.of(2026, Month.JUNE, 26, 11, 0), null,
 				false, 0.0);
 
 		ParkingTicket existingActiveTicket = new ParkingTicket("t1", "ABC123", "z1",
-				LocalDateTime.of(2026, 6, 26, 9, 0), null, false, 0.0);
+				LocalDateTime.of(2026, Month.JUNE, 26, 9, 0), null, false, 0.0);
 
 		when(parkingTicketRepository.findById("t1")).thenReturn(null);
 		when(parkingTicketRepository.findActiveTicketByVehiclePlate("ABC123")).thenReturn(existingActiveTicket);
@@ -223,7 +224,7 @@ public class ParkingControllerTest {
 	@Test
 	public void testNewParkingTicketShouldShowErrorWhenZoneIsFull() {
 		ParkingZone zone = new ParkingZone("z1", "ParkingA", 2, 2.5, true);
-		ParkingTicket ticket = new ParkingTicket("t1", "ABC123", "z1", LocalDateTime.of(2026, 6, 26, 11, 0), null,
+		ParkingTicket ticket = new ParkingTicket("t1", "ABC123", "z1", LocalDateTime.of(2026, Month.JUNE, 26, 11, 0), null,
 				false, 0.0);
 
 		when(parkingTicketRepository.findById("t3")).thenReturn(null);
@@ -241,7 +242,7 @@ public class ParkingControllerTest {
 	@Test
 	public void testNewParkingTicketShouldShowErrorWhenRepositoryThrowsIllegalArgument() {
 		ParkingZone zone = new ParkingZone("z1", "ParkingA", 2, 2.5, true);
-		ParkingTicket ticket = new ParkingTicket("t1", "ABC123", "z1", LocalDateTime.of(2026, 6, 26, 9, 0), null, false,
+		ParkingTicket ticket = new ParkingTicket("t1", "ABC123", "z1", LocalDateTime.of(2026, Month.JUNE, 26, 9, 0), null, false,
 				0.0);
 
 		when(parkingTicketRepository.findById("t1")).thenReturn(null);
@@ -259,9 +260,9 @@ public class ParkingControllerTest {
 
 	@Test
 	public void testNewParkingTicketShouldShowErrorWithCorrectMessageWhenVehicleAlreadyHasActiveTicket() {
-		ParkingTicket newTicket = new ParkingTicket("t2", "AB123", "z1", LocalDateTime.of(2026, 6, 26, 10, 0), null,
+		ParkingTicket newTicket = new ParkingTicket("t2", "AB123", "z1", LocalDateTime.of(2026, Month.JUNE, 26, 10, 0), null,
 				false, 0.0);
-		ParkingTicket activeTicket = new ParkingTicket("t1", "AB123", "z1", LocalDateTime.of(2026, 6, 26, 9, 0), null,
+		ParkingTicket activeTicket = new ParkingTicket("t1", "AB123", "z1", LocalDateTime.of(2026, Month.JUNE, 26, 9, 0), null,
 				false, 0.0);
 
 		when(parkingTicketRepository.findById("t2")).thenReturn(null);

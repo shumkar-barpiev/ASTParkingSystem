@@ -22,6 +22,7 @@ import com.myexam.parking.model.ParkingTicket;
 import com.myexam.parking.model.ParkingZone;
 
 import java.time.LocalDateTime;
+import java.time.Month;
 
 @RunWith(GUITestRunner.class)
 public class ParkingSwingViewTest extends AssertJSwingJUnitTestCase {
@@ -56,8 +57,8 @@ public class ParkingSwingViewTest extends AssertJSwingJUnitTestCase {
 	}
 
 	private ParkingTicket ticket(String id, String plate, String zoneId) {
-		return new ParkingTicket(id, plate, zoneId, LocalDateTime.of(2026, 6, 26, 9, 0),
-				LocalDateTime.of(2026, 6, 26, 11, 0), false, 5.0);
+		return new ParkingTicket(id, plate, zoneId, LocalDateTime.of(2026, Month.JUNE, 26, 9, 0),
+				LocalDateTime.of(2026, Month.JUNE, 26, 11, 0), false, 5.0);
 	}
 
 	@Test
@@ -548,7 +549,7 @@ public class ParkingSwingViewTest extends AssertJSwingJUnitTestCase {
 		window.textBox("entryTimeTextField").requireText("");
 		window.textBox("exitTimeTextField").requireText("");
 		window.checkBox("isPaidCheckBox").requireNotSelected();
-		assertThat(window.comboBox("parkingZoneComboBox").contents().length).isEqualTo(0);
+		assertThat(window.comboBox("parkingZoneComboBox").contents().length).isZero();
 	}
 
 	@Test
@@ -610,4 +611,19 @@ public class ParkingSwingViewTest extends AssertJSwingJUnitTestCase {
 		window.label("errorMessageLabel").requireText(" ");
 	}
 
+	@Test
+	@GUITest
+	public void testDeleteRowByIdShouldDoNothingWhenControllerAndIdAreBothNull() {
+		GuiActionRunner.execute(() -> parkingSwingView.setParkingController(null));
+		GuiActionRunner.execute(() -> {
+			javax.swing.table.DefaultTableModel model = (javax.swing.table.DefaultTableModel) parkingSwingView
+					.getTableParkingZones().getModel();
+			parkingSwingView.showAllParkingZones(java.util.Collections.emptyList());
+			model.addRow(new Object[] { null, "Parking A", 5, 1.0, true, "Delete" });
+		});
+
+		window.table("parkingZoneTable").cell(org.assertj.swing.data.TableCell.row(0).column(5)).click();
+
+		window.label("errorMessageLabel").requireText(" ");
+	}
 }

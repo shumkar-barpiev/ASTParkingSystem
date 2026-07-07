@@ -2,7 +2,10 @@ package com.myexam.parking.app;
 
 import java.awt.EventQueue;
 import java.util.concurrent.Callable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import com.myexam.parking.app.ParkingSwingApp;
 import com.myexam.parking.controller.ParkingController;
 import com.myexam.parking.repository.mongo.ParkingTicketMongoRepository;
 import com.myexam.parking.repository.mongo.ParkingZoneMongoRepository;
@@ -61,7 +64,8 @@ public class ParkingSwingApp implements Callable<Void> {
 				parkingController.allParkingTickets();
 
 			} catch (Exception e) {
-				e.printStackTrace();
+				Logger.getLogger(ParkingSwingApp.class.getName()).log(Level.SEVERE,
+						"Failed to start Parking application", e);
 			}
 		});
 		return null;

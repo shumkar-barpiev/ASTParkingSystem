@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.net.InetSocketAddress;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -72,8 +73,8 @@ public class ParkingTicketMongoRepositoryTest {
 
 	@Test
 	public void testFindAllWhenDatabaseIsNotEmpty() {
-		LocalDateTime entry1 = LocalDateTime.of(2026, 6, 20, 10, 0);
-		LocalDateTime entry2 = LocalDateTime.of(2026, 6, 20, 11, 0);
+		LocalDateTime entry1 = LocalDateTime.of(2026, Month.JUNE, 26, 10, 0);
+		LocalDateTime entry2 = LocalDateTime.of(2026, Month.JUNE, 26, 11, 0);
 
 		addTestTicket("1", "ABC123", "ParkingAId", entry1, null, false, 0.0);
 		addTestTicket("2", "DFE456", "ParkingBId", entry2, null, false, 0.0);
@@ -90,7 +91,7 @@ public class ParkingTicketMongoRepositoryTest {
 
 	@Test
 	public void testFindByIdFound() {
-		LocalDateTime entry = LocalDateTime.of(2026, 6, 20, 14, 30);
+		LocalDateTime entry = LocalDateTime.of(2026, Month.JUNE, 26, 14, 30);
 		addTestTicket("1", "ABC123", "ParkingAId", entry, null, false, 0.0);
 
 		assertThat(ticketRepository.findById("1"))
@@ -99,7 +100,7 @@ public class ParkingTicketMongoRepositoryTest {
 
 	@Test
 	public void testSave() {
-		LocalDateTime entry = LocalDateTime.of(2026, 6, 20, 8, 15);
+		LocalDateTime entry = LocalDateTime.of(2026, Month.JUNE, 26, 8, 15);
 		ParkingTicket ticket = new ParkingTicket("1", "ABC123", "ParkingAId", entry, null, false, 0.0);
 
 		ticketRepository.save(ticket);
@@ -109,7 +110,7 @@ public class ParkingTicketMongoRepositoryTest {
 
 	@Test
 	public void testDelete() {
-		LocalDateTime entry = LocalDateTime.of(2026, 6, 20, 10, 0);
+		LocalDateTime entry = LocalDateTime.of(2026, Month.JUNE, 26, 10, 0);
 		addTestTicket("1", "ABC123", "ParkingAId", entry, null, false, 0.0);
 
 		ticketRepository.delete("1");
@@ -119,7 +120,7 @@ public class ParkingTicketMongoRepositoryTest {
 
 	@Test
 	public void testSaveWithNullEntryAndNonNullExit() {
-		LocalDateTime exit = LocalDateTime.of(2026, 6, 20, 15, 0);
+		LocalDateTime exit = LocalDateTime.of(2026, Month.JUNE, 26, 15, 0);
 		ParkingTicket ticket = new ParkingTicket("1", "ABC12345", "ParkingC", null, exit, false, 0.0);
 
 		ticketRepository.save(ticket);
@@ -143,7 +144,7 @@ public class ParkingTicketMongoRepositoryTest {
 
 	@Test
 	public void testSaveThrowsExceptionWhenIdIsNull() {
-		LocalDateTime entry = LocalDateTime.of(2026, 6, 20, 10, 0);
+		LocalDateTime entry = LocalDateTime.of(2026, Month.JUNE, 26, 10, 0);
 		ParkingTicket invalidTicket = new ParkingTicket(null, "ABC1234", "ParkingAId", entry, null, false, 0.0);
 
 		assertThatThrownBy(() -> ticketRepository.save(invalidTicket)).isInstanceOf(IllegalArgumentException.class)
@@ -152,7 +153,7 @@ public class ParkingTicketMongoRepositoryTest {
 
 	@Test
 	public void testSaveThrowsExceptionWhenIdIsBlank() {
-		LocalDateTime entry = LocalDateTime.of(2026, 6, 20, 10, 0);
+		LocalDateTime entry = LocalDateTime.of(2026, Month.JUNE, 26, 10, 0);
 		ParkingTicket invalidTicket = new ParkingTicket("   ", "ABC1234", "ParkingAId", entry, null, false, 0.0);
 
 		assertThatThrownBy(() -> ticketRepository.save(invalidTicket)).isInstanceOf(IllegalArgumentException.class)
@@ -161,7 +162,7 @@ public class ParkingTicketMongoRepositoryTest {
 
 	@Test
 	public void testSaveThrowsExceptionWhenVehiclePlateIsNull() {
-		LocalDateTime entry = LocalDateTime.of(2026, 6, 20, 10, 0);
+		LocalDateTime entry = LocalDateTime.of(2026, Month.JUNE, 26, 10, 0);
 		ParkingTicket invalidTicket = new ParkingTicket("1", null, "ParkingAId", entry, null, false, 0.0);
 
 		assertThatThrownBy(() -> ticketRepository.save(invalidTicket)).isInstanceOf(IllegalArgumentException.class)
@@ -170,7 +171,7 @@ public class ParkingTicketMongoRepositoryTest {
 
 	@Test
 	public void testSaveThrowsExceptionWhenVehiclePlateIsBlank() {
-		LocalDateTime entry = LocalDateTime.of(2026, 6, 20, 10, 0);
+		LocalDateTime entry = LocalDateTime.of(2026, Month.JUNE, 26, 10, 0);
 		ParkingTicket invalidTicket = new ParkingTicket("1", "   ", "ParkingAId", entry, null, false, 0.0);
 
 		assertThatThrownBy(() -> ticketRepository.save(invalidTicket)).isInstanceOf(IllegalArgumentException.class)
@@ -179,7 +180,7 @@ public class ParkingTicketMongoRepositoryTest {
 
 	@Test
 	public void testSaveThrowsExceptionWhenParkingZoneIdIsNull() {
-		LocalDateTime entry = LocalDateTime.of(2026, 6, 20, 10, 0);
+		LocalDateTime entry = LocalDateTime.of(2026, Month.JUNE, 26, 10, 0);
 		ParkingTicket invalidTicket = new ParkingTicket("1", "ABC1234", null, entry, null, false, 0.0);
 
 		assertThatThrownBy(() -> ticketRepository.save(invalidTicket)).isInstanceOf(IllegalArgumentException.class)
@@ -188,7 +189,7 @@ public class ParkingTicketMongoRepositoryTest {
 
 	@Test
 	public void testSaveThrowsExceptionWhenParkingZoneIdIsBlank() {
-		LocalDateTime entry = LocalDateTime.of(2026, 6, 20, 10, 0);
+		LocalDateTime entry = LocalDateTime.of(2026, Month.JUNE, 26, 10, 0);
 		ParkingTicket invalidTicket = new ParkingTicket("1", "ABC1234", "   ", entry, null, false, 0.0);
 
 		assertThatThrownBy(() -> ticketRepository.save(invalidTicket)).isInstanceOf(IllegalArgumentException.class)
@@ -197,7 +198,7 @@ public class ParkingTicketMongoRepositoryTest {
 
 	@Test
 	public void testSaveThrowsExceptionWhenTotalCostIsNegative() {
-		LocalDateTime entry = LocalDateTime.of(2026, 6, 20, 10, 0);
+		LocalDateTime entry = LocalDateTime.of(2026, Month.JUNE, 26, 10, 0);
 		ParkingTicket invalidTicket = new ParkingTicket("1", "ABC1234", "ParkingAId", entry, null, false, -5.00);
 
 		assertThatThrownBy(() -> ticketRepository.save(invalidTicket)).isInstanceOf(IllegalArgumentException.class)
@@ -206,8 +207,8 @@ public class ParkingTicketMongoRepositoryTest {
 
 	@Test
 	public void testCountActiveTicketsByZoneIdShouldReturnCountOfActiveTickets() {
-		LocalDateTime entry = LocalDateTime.of(2026, 6, 26, 9, 0);
-		LocalDateTime exit = LocalDateTime.of(2026, 6, 26, 11, 0);
+		LocalDateTime entry = LocalDateTime.of(2026, Month.JUNE, 26, 9, 0);
+		LocalDateTime exit = LocalDateTime.of(2026, Month.JUNE, 26, 11, 0);
 
 		addTestTicket("t1", "AB123", "parkingId1", entry, null, false, 0.0);
 		addTestTicket("t2", "CD456", "parkingId1", entry, null, false, 0.0);
@@ -219,22 +220,22 @@ public class ParkingTicketMongoRepositoryTest {
 
 	@Test
 	public void testCountActiveTicketsByZoneIdShouldReturnZeroWhenNoActiveTickets() {
-		LocalDateTime entry = LocalDateTime.of(2026, 6, 26, 9, 0);
-		LocalDateTime exit = LocalDateTime.of(2026, 6, 26, 11, 0);
+		LocalDateTime entry = LocalDateTime.of(2026, Month.JUNE, 26, 9, 0);
+		LocalDateTime exit = LocalDateTime.of(2026, Month.JUNE, 26, 11, 0);
 
 		addTestTicket("t1", "AB123", "parkingId1", entry, exit, true, 5.0);
 
-		assertThat(ticketRepository.countActiveTicketsByZoneId("parkingId1")).isEqualTo(0L);
+		assertThat(ticketRepository.countActiveTicketsByZoneId("parkingId1")).isZero();
 	}
 
 	@Test
 	public void testCountActiveTicketsByZoneIdShouldReturnZeroWhenZoneIsEmpty() {
-		assertThat(ticketRepository.countActiveTicketsByZoneId("parkingId1")).isEqualTo(0L);
+		assertThat(ticketRepository.countActiveTicketsByZoneId("parkingId1")).isZero();
 	}
 
 	@Test
 	public void testFindActiveTicketByVehiclePlateShouldReturnTicketWhenActiveTicketExists() {
-		LocalDateTime entry = LocalDateTime.of(2026, 6, 26, 9, 0);
+		LocalDateTime entry = LocalDateTime.of(2026, Month.JUNE, 26, 9, 0);
 
 		addTestTicket("t1", "AB123", "parkingId1", entry, null, false, 0.0);
 
@@ -245,8 +246,8 @@ public class ParkingTicketMongoRepositoryTest {
 
 	@Test
 	public void testFindActiveTicketByVehiclePlateShouldReturnNullWhenTicketIsCompleted() {
-		LocalDateTime entry = LocalDateTime.of(2026, 6, 26, 9, 0);
-		LocalDateTime exit = LocalDateTime.of(2026, 6, 26, 11, 0);
+		LocalDateTime entry = LocalDateTime.of(2026, Month.JUNE, 26, 9, 0);
+		LocalDateTime exit = LocalDateTime.of(2026, Month.JUNE, 26, 11, 0);
 
 		addTestTicket("t1", "AB123", "parkingId1", entry, exit, true, 5.0);
 

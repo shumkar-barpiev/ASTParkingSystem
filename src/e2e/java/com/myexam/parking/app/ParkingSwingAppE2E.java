@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.swing.launcher.ApplicationLauncher.application;
 
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.Arrays;
 
 import javax.swing.JFrame;
@@ -57,7 +58,7 @@ public class ParkingSwingAppE2E extends AssertJSwingJUnitTestCase {
 		addTestZoneToDatabase(PARKING_ZONE_FIXTURE_1_ID, PARKING_ZONE_FIXTURE_1_NAME, 100, 2.5, true);
 		addTestZoneToDatabase(PARKING_ZONE_FIXTURE_2_ID, PARKING_ZONE_FIXTURE_2_NAME, 50, 3.0, true);
 		addTestTicketToDatabase(PARKING_TICKET_FIXTURE_1_ID, PARKING_TICKET_FIXTURE_1_PLATE, PARKING_ZONE_FIXTURE_1_ID,
-				LocalDateTime.of(2026, 6, 26, 9, 0), null, false, 0.0);
+				LocalDateTime.of(2026, Month.JUNE, 26, 9, 0), null, false, 0.0);
 
 		application("com.myexam.parking.app.ParkingSwingApp")
 				.withArgs("--mongo-host=" + containerIpAddress, "--mongo-port=" + mappedPort.toString(),
@@ -113,6 +114,7 @@ public class ParkingSwingAppE2E extends AssertJSwingJUnitTestCase {
 		window.button("parkingZoneSaveButton").click();
 
 		window.label("errorMessageLabel").requireText("Capacity and Rate must be valid numbers.");
+		assertThat(window.label("errorMessageLabel").text()).isEqualTo("Capacity and Rate must be valid numbers.");
 	}
 
 	@Test
@@ -132,6 +134,9 @@ public class ParkingSwingAppE2E extends AssertJSwingJUnitTestCase {
 		window.table("parkingZoneTable").cell(TableCell.row(0).column(5)).click();
 
 		window.label("errorMessageLabel").requireText("No existing parking zone with id " + PARKING_ZONE_FIXTURE_1_ID);
+		assertThat(window.label("errorMessageLabel").text())
+				.isEqualTo("No existing parking zone with id " + PARKING_ZONE_FIXTURE_1_ID);
+
 	}
 
 	@Test
@@ -160,6 +165,9 @@ public class ParkingSwingAppE2E extends AssertJSwingJUnitTestCase {
 
 		window.label("errorMessageLabel")
 				.requireText("Vehicle " + PARKING_TICKET_FIXTURE_1_PLATE + " already has an active ticket");
+
+		assertThat(window.label("errorMessageLabel").text())
+				.isEqualTo("Vehicle " + PARKING_TICKET_FIXTURE_1_PLATE + " already has an active ticket");
 	}
 
 	@Test
@@ -182,6 +190,9 @@ public class ParkingSwingAppE2E extends AssertJSwingJUnitTestCase {
 
 		window.label("errorMessageLabel")
 				.requireText("No existing parking ticket with id " + PARKING_TICKET_FIXTURE_1_ID);
+		assertThat(window.label("errorMessageLabel").text())
+				.isEqualTo("No existing parking ticket with id " + PARKING_TICKET_FIXTURE_1_ID);
+
 	}
 
 	private void addTestZoneToDatabase(String id, String name, int capacity, double hourlyRate, boolean isAvailable) {
