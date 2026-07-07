@@ -9,26 +9,35 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
-    - name: Set up JDK 8
+    - name: Set up JDK 17
       uses: actions/setup-java@v4
       with:
-        java-version: '8' 
+        java-version: '17'
         distribution: 'temurin'
-        cache: maven 
+        cache: maven
 
     - name: Install xvfb
       run: sudo apt-get install -y xvfb
 
-      - name: Run Unit, IT, and E2E Tests
-        run: xvfb-run mvn clean verify
+    - name: Set Maven Additional Goals
+      run: echo "SONARGOAL=sonar:sonar" >> $GITHUB_ENV
+      if: ${{ env.SONAR_TOKEN }}
 
-    - name: Generate JaCoCo Coverage Report
-      run: mvn jacoco:report
+    - name: Run Unit, IT, and E2E Tests with SonarCloud
+      run: >
+        xvfb-run mvn clean verify -Pjacoco $SONARGOAL
+        -Dsonar.organization=shumkar-barpiev
+        -Dsonar.host.url=https://sonarcloud.io
+        -Dsonar.projectKey=shumkar-barpiev_ASTParkingSystem
 
     - name: Run PIT Mutation Testing
       run: xvfb-run mvn org.pitest:pitest-maven:mutationCoverage
@@ -37,15 +46,19 @@ jobs:
       uses: coverallsapp/github-action@v2
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
+        file: target/site/jacoco/jacoco.xml
+        format: jacoco
 
     - name: Archive PIT Mutation Report
       uses: actions/upload-artifact@v4
+      if: always()
       with:
         name: pit-mutation-report
         path: '**/target/pit-reports/'
 
     - name: Archive JaCoCo Coverage Report
       uses: actions/upload-artifact@v4
+      if: always()
       with:
         name: jacoco-coverage-report
         path: '**/target/site/jacoco/'
