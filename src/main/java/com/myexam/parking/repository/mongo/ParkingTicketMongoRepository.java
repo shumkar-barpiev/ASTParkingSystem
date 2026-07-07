@@ -19,6 +19,7 @@ public class ParkingTicketMongoRepository implements ParkingTicketRepository {
 	private static final String ENTRY_FIELD = "entryTime";
 	private static final String EXIT_FIELD = "exitTime";
 	private static final String PAID_FIELD = "paid";
+	private static final String TOTAL_COST = "totalCost";
 
 	private MongoCollection<Document> ticketCollection;
 
@@ -52,7 +53,7 @@ public class ParkingTicketMongoRepository implements ParkingTicketRepository {
 						.append(PARKING_ZONE_ID_FIELD, ticket.getParkingZoneId())
 						.append(ENTRY_FIELD, ticket.getEntryTime() != null ? ticket.getEntryTime().toString() : null)
 						.append(EXIT_FIELD, ticket.getExitTime() != null ? ticket.getExitTime().toString() : null)
-						.append(PAID_FIELD, ticket.isPaid()).append("totalCost", ticket.getTotalCost()));
+						.append(PAID_FIELD, ticket.isPaid()).append(TOTAL_COST, ticket.getTotalCost()));
 	}
 
 	@Override
@@ -77,10 +78,11 @@ public class ParkingTicketMongoRepository implements ParkingTicketRepository {
 	}
 
 	private ParkingTicket fromDocumentToParkingTicket(Document d) {
-		return new ParkingTicket(d.getString("id"), d.getString("vehiclePlate"), d.getString("parkingZoneId"),
-				d.getString("entryTime") != null ? LocalDateTime.parse(d.getString("entryTime")) : null,
-				d.getString("exitTime") != null ? LocalDateTime.parse(d.getString("exitTime")) : null,
-				d.getBoolean(PAID_FIELD, false), d.getDouble("totalCost") != null ? d.getDouble("totalCost") : 0.0);
+		return new ParkingTicket(d.getString("id"), d.getString(VEHICLE_PLATE_FIELD),
+				d.getString(PARKING_ZONE_ID_FIELD),
+				d.getString(ENTRY_FIELD) != null ? LocalDateTime.parse(d.getString(ENTRY_FIELD)) : null,
+				d.getString(EXIT_FIELD) != null ? LocalDateTime.parse(d.getString(EXIT_FIELD)) : null,
+				d.getBoolean(PAID_FIELD, false), d.getDouble(TOTAL_COST) != null ? d.getDouble(TOTAL_COST) : 0.0);
 	}
 
 	private void validateParkingTicket(ParkingTicket ticket) {
