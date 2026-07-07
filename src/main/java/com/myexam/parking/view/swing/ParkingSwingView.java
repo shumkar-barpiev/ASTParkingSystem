@@ -21,9 +21,11 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.WindowConstants;
 
 public class ParkingSwingView extends JFrame implements ParkingView {
 	private static final long serialVersionUID = 1L;
+	private static final String DELETE_BTN = "Delete";
 
 	private JPanel mainPanel;
 
@@ -43,15 +45,15 @@ public class ParkingSwingView extends JFrame implements ParkingView {
 	private JLabel errorMessageLabel;
 	private JComboBox<String> parkingZoneComboBox;
 
-	private java.util.Map<String, ParkingZone> parkingZoneByIdMap = new java.util.HashMap<>();
-	private java.util.Map<String, ParkingTicket> parkingTicketByIdMap = new java.util.HashMap<>();
+	private transient Map<String, ParkingZone> parkingZoneByIdMap = new java.util.HashMap<>();
+	private transient Map<String, ParkingTicket> parkingTicketByIdMap = new java.util.HashMap<>();
 
-	private ParkingController parkingController;
+	private transient ParkingController parkingController;
 
 	public ParkingSwingView() {
 		setResizable(false);
 		setTitle("Parking Management System");
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		setBounds(100, 100, 820, 550);
 
 		mainPanel = new JPanel();
@@ -286,7 +288,7 @@ public class ParkingSwingView extends JFrame implements ParkingView {
 			parkingZoneByIdMap.put(zone.getId(), zone);
 
 			model.addRow(new Object[] { zone.getId(), zone.getName(), zone.getCapacity(), zone.getHourlyRate(),
-					zone.isAvailable(), "Delete" });
+					zone.isAvailable(), DELETE_BTN });
 		}
 	}
 
@@ -300,7 +302,7 @@ public class ParkingSwingView extends JFrame implements ParkingView {
 		parkingZoneByIdMap.put(zone.getId(), zone);
 
 		model.addRow(new Object[] { zone.getId(), zone.getName(), zone.getCapacity(), zone.getHourlyRate(),
-				zone.isAvailable(), "Delete" });
+				zone.isAvailable(), DELETE_BTN });
 
 		clearZoneForm();
 		resetErrorLabel();
@@ -417,14 +419,14 @@ public class ParkingSwingView extends JFrame implements ParkingView {
 		String zoneName = zone != null ? zone.getName() : ticket.getParkingZoneId();
 
 		return new Object[] { ticket.getId(), ticket.getVehiclePlate(), zoneName, ticket.getEntryTime(),
-				ticket.getExitTime(), ticket.isPaid(), ticket.getTotalCost(), "Delete" };
+				ticket.getExitTime(), ticket.isPaid(), ticket.getTotalCost(), DELETE_BTN };
 	}
 
 	private static class DeleteButtonRenderer extends JButton implements javax.swing.table.TableCellRenderer {
 		private static final long serialVersionUID = 1L;
 
 		DeleteButtonRenderer() {
-			setText("Delete");
+			setText(DELETE_BTN);
 		}
 
 		@Override
@@ -437,7 +439,7 @@ public class ParkingSwingView extends JFrame implements ParkingView {
 	private class DeleteButtonEditor extends javax.swing.AbstractCellEditor
 			implements javax.swing.table.TableCellEditor {
 		private static final long serialVersionUID = 1L;
-		private final JButton button = new JButton("Delete");
+		private final JButton button = new JButton(DELETE_BTN);
 		private String idToDelete;
 
 		DeleteButtonEditor(JTable table, boolean isTicketTable) {
@@ -461,7 +463,7 @@ public class ParkingSwingView extends JFrame implements ParkingView {
 
 		@Override
 		public Object getCellEditorValue() {
-			return "Delete";
+			return DELETE_BTN;
 		}
 	}
 

@@ -14,6 +14,11 @@ import com.myexam.parking.model.ParkingTicket;
 import com.myexam.parking.repository.ParkingTicketRepository;
 
 public class ParkingTicketMongoRepository implements ParkingTicketRepository {
+	private static final String PARKING_ZONE_ID_FIELD = "parkingZoneId";
+	private static final String VEHICLE_PLATE_FIELD = "vehiclePlate";
+	private static final String ENTRY_FIELD = "entryTime";
+	private static final String EXIT_FIELD = "exitTime";
+	private static final String PAID_FIELD = "paid";
 
 	private MongoCollection<Document> ticketCollection;
 
@@ -42,11 +47,12 @@ public class ParkingTicketMongoRepository implements ParkingTicketRepository {
 	public void save(ParkingTicket ticket) {
 		validateParkingTicket(ticket);
 
-		ticketCollection.insertOne(new Document().append("id", ticket.getId())
-				.append("vehiclePlate", ticket.getVehiclePlate()).append("parkingZoneId", ticket.getParkingZoneId())
-				.append("entryTime", ticket.getEntryTime() != null ? ticket.getEntryTime().toString() : null)
-				.append("exitTime", ticket.getExitTime() != null ? ticket.getExitTime().toString() : null)
-				.append("paid", ticket.isPaid()).append("totalCost", ticket.getTotalCost()));
+		ticketCollection.insertOne(
+				new Document().append("id", ticket.getId()).append(VEHICLE_PLATE_FIELD, ticket.getVehiclePlate())
+						.append(PARKING_ZONE_ID_FIELD, ticket.getParkingZoneId())
+						.append(ENTRY_FIELD, ticket.getEntryTime() != null ? ticket.getEntryTime().toString() : null)
+						.append(EXIT_FIELD, ticket.getExitTime() != null ? ticket.getExitTime().toString() : null)
+						.append(PAID_FIELD, ticket.isPaid()).append("totalCost", ticket.getTotalCost()));
 	}
 
 	@Override
@@ -57,13 +63,13 @@ public class ParkingTicketMongoRepository implements ParkingTicketRepository {
 	@Override
 	public long countActiveTicketsByZoneId(String zoneId) {
 		return ticketCollection
-				.countDocuments(Filters.and(Filters.eq("parkingZoneId", zoneId), Filters.eq("exitTime", null)));
+				.countDocuments(Filters.and(Filters.eq(PARKING_ZONE_ID_FIELD, zoneId), Filters.eq(EXIT_FIELD, null)));
 	}
 
 	@Override
 	public ParkingTicket findActiveTicketByVehiclePlate(String vehiclePlate) {
 		Document d = ticketCollection
-				.find(Filters.and(Filters.eq("vehiclePlate", vehiclePlate), Filters.eq("exitTime", null))).first();
+				.find(Filters.and(Filters.eq(VEHICLE_PLATE_FIELD, vehiclePlate), Filters.eq(EXIT_FIELD, null))).first();
 		if (d != null) {
 			return fromDocumentToParkingTicket(d);
 		}
@@ -74,7 +80,7 @@ public class ParkingTicketMongoRepository implements ParkingTicketRepository {
 		return new ParkingTicket(d.getString("id"), d.getString("vehiclePlate"), d.getString("parkingZoneId"),
 				d.getString("entryTime") != null ? LocalDateTime.parse(d.getString("entryTime")) : null,
 				d.getString("exitTime") != null ? LocalDateTime.parse(d.getString("exitTime")) : null,
-				d.getBoolean("paid", false), d.getDouble("totalCost") != null ? d.getDouble("totalCost") : 0.0);
+				d.getBoolean(PAID_FIELD, false), d.getDouble("totalCost") != null ? d.getDouble("totalCost") : 0.0);
 	}
 
 	private void validateParkingTicket(ParkingTicket ticket) {
