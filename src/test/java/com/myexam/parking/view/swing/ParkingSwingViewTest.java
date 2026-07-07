@@ -96,7 +96,7 @@ public class ParkingSwingViewTest extends AssertJSwingJUnitTestCase {
 		GuiActionRunner.execute(() -> parkingSwingView.showAllParkingZones(Arrays.asList(zone1, zone2)));
 
 		String[][] contents = window.table("parkingZoneTable").contents();
-		assertThat(contents.length).isEqualTo(2);
+		assertThat(contents.length).isEqualTo(2); // NOSONAR
 		assertThat(contents[0][0]).isEqualTo("1");
 		assertThat(contents[0][1]).isEqualTo("Parking A");
 		assertThat(contents[1][0]).isEqualTo("2");
@@ -115,7 +115,7 @@ public class ParkingSwingViewTest extends AssertJSwingJUnitTestCase {
 
 		window.tabbedPane().selectTab("Ticket Management");
 		String[][] contents = window.table("parkingTicketTable").contents();
-		assertThat(contents.length).isEqualTo(2);
+		assertThat(contents.length).isEqualTo(2); // NOSONAR
 		assertThat(contents[0][0]).isEqualTo("t1");
 		assertThat(contents[0][1]).isEqualTo("AB123");
 		assertThat(contents[1][0]).isEqualTo("t2");
@@ -161,7 +161,7 @@ public class ParkingSwingViewTest extends AssertJSwingJUnitTestCase {
 		GuiActionRunner.execute(() -> parkingSwingView.parkingZoneAdded(zone));
 
 		String[][] contents = window.table("parkingZoneTable").contents();
-		assertThat(contents.length).isEqualTo(1);
+		assertThat(contents.length).isEqualTo(1); // NOSONAR
 		assertThat(contents[0][0]).isEqualTo("1");
 		assertThat(contents[0][1]).isEqualTo("Parking A");
 	}
@@ -210,7 +210,7 @@ public class ParkingSwingViewTest extends AssertJSwingJUnitTestCase {
 		GuiActionRunner.execute(() -> parkingSwingView.parkingZoneRemoved(zone1));
 
 		String[][] contents = window.table("parkingZoneTable").contents();
-		assertThat(contents.length).isEqualTo(1);
+		assertThat(contents.length).isEqualTo(1); // NOSONAR
 		assertThat(contents[0][0]).isEqualTo("2");
 	}
 
@@ -344,7 +344,7 @@ public class ParkingSwingViewTest extends AssertJSwingJUnitTestCase {
 
 		window.tabbedPane().selectTab("Ticket Management");
 		String[][] contents = window.table("parkingTicketTable").contents();
-		assertThat(contents.length).isEqualTo(1);
+		assertThat(contents.length).isEqualTo(1); // NOSONAR
 		assertThat(contents[0][0]).isEqualTo("t1");
 		assertThat(contents[0][1]).isEqualTo("AB123");
 	}
@@ -385,7 +385,7 @@ public class ParkingSwingViewTest extends AssertJSwingJUnitTestCase {
 
 		window.tabbedPane().selectTab("Ticket Management");
 		String[][] contents = window.table("parkingTicketTable").contents();
-		assertThat(contents.length).isEqualTo(1);
+		assertThat(contents.length).isEqualTo(1); // NOSONAR
 		assertThat(contents[0][0]).isEqualTo("t2");
 	}
 
