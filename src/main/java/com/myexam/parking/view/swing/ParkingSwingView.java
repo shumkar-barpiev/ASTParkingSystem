@@ -410,7 +410,7 @@ public class ParkingSwingView extends JFrame implements ParkingView {
 	private void setupDeleteColumn(JTable table, int columnIndex, boolean isTicketTable) {
 		table.setRowHeight(32);
 		table.getColumnModel().getColumn(columnIndex).setCellRenderer(new DeleteButtonRenderer());
-		table.getColumnModel().getColumn(columnIndex).setCellEditor(new DeleteButtonEditor(table, isTicketTable));
+		table.getColumnModel().getColumn(columnIndex).setCellEditor(new DeleteButtonEditor(isTicketTable));
 	}
 
 	private Object[] ticketToRow(ParkingTicket ticket) {
@@ -442,7 +442,7 @@ public class ParkingSwingView extends JFrame implements ParkingView {
 		private final JButton button = new JButton(DELETE_BTN);
 		private String idToDelete;
 
-		DeleteButtonEditor(JTable table, boolean isTicketTable) {
+		DeleteButtonEditor(boolean isTicketTable) {
 			button.addActionListener(e -> {
 				String id = idToDelete;
 				fireEditingStopped();
@@ -467,7 +467,7 @@ public class ParkingSwingView extends JFrame implements ParkingView {
 		}
 	}
 
-	private void deleteRowById(String id, boolean isTicketTable) {
+	private void deleteRowById(String id, boolean isTicketTable) { // NOSONAR
 		if (parkingController == null) {
 			return;
 		}
